@@ -54,20 +54,19 @@ tile_data: .space 1600
 puzzle: .space 4096
 solution: .space 328
 
-# struct TileInfo {
-# 	int state; // Either 0 for EMPTY, 1 for GROWING
-# 	int owning_bot; // 0 for owned by SPIMbot, 1 for owned by cohabitating bot
-# 	int growth;
-# 	int water;
-# };
-
 .text
 main:
 
-# s0 = seed resource
-# s1 = water resource
-# s2 = fire resource
-# s3 = tile_data TILE_SCAN
+############ USE OF REGISTERS ############
+
+	# s0 = water resource
+	# s1 = seed resource
+	# s2 = fire resource
+	# s3 = tile_data TILE_SCAN
+	# s4 = x
+	# s5 = y
+
+############ ENABLE INTERRUPTS ############
 
 	# enable interrupts
 	li		$t0,	ON_FIRE_MASK
@@ -84,7 +83,11 @@ start:
 	la		$s3,	tile_data
 	sw		$s3,	TILE_SCAN
 
-loop:
+main_loop:
+
+############ CHECK RESOURCES ############
+
+	# (use t0, free t0)
 
 	# 检查resource，没有的话request
 
@@ -92,7 +95,7 @@ loop:
 	li		$t0, 	0
 	sw 		$t0,	SET_RESOURCE_TYPE
 	la		$t0,	puzzle_data
-	sw 		$t0, 	REQUEST_PUZZLE	# t0结束使用
+	sw 		$t0, 	REQUEST_PUZZLE
 
 has_water:
 
@@ -112,53 +115,151 @@ has_seed:
 
 has_fire:
 
-	# 根据坐标，确定走的方向，走到下一格
+############ CHECK STATUS ############
 
-	# TODO www
+	lw		$s4,	BOT_X
+	lw		$s5,	BOT_Y
+	mul 	$t0,	$s4,	10
+	add		$t0,  $t0,	$s5 # t0 = index
+
+	# struct TileInfo {
+	# 	int state; // Either 0 for EMPTY, 1 for GROWING
+	# 	int owning_bot; // 0 for owned by SPIMbot, 1 for owned by cohabitating bot
+	# 	int growth;
+	# 	int water;
+	# };
+
+	lw		$t1,	0($t0)	# t1 = state
+	lw		$t2,	4($t0)	# t2 = owning_bot
+	lw		$t3,	8($t0)	# t3 = growth
+	lw		$t4,	12($t0)	# t4 = water
 
 	# 对每一格check
 	# if state == 0 & seed > 0	plant
 	# if state == 1 & own == 0 & water > 0	water
 	# if state == 1 & own == 1 & fire > 0	fire
 
-	# TODO
+	bge		$t1,	0,	state_1
 
-_state_0:
-
-	# TODO
-
-_state_1:
-
-	# TODO
-
-_my_plant:
-
-	# TODO
-
-_others_plant:
-
-	# TODO
-
+state_0:
+	beq		$s1,	0,	finish_action
 action_plant:
+	sw 		$0,		SEED_TILE
+	j 		finish_action
 
-	# TODO
+state_1:
+	bge 	$t2,	0,	others_plant
 
-	j 		loop
-
+my_plant:
+	beq		$s0,	0,	finish_action
 action_water:
+	li  	$t0, 	10  # Dump 10 units of water
+  sw  	$t0, 	WATER_TILE
+	j 		finish_action
 
-	# TODO
+others_plant:
+	beq		$s2,	0,	finish_action
+action_fire:
+	sw  	$0, 	BURN_TILE
+	j 		finish_action
 
-	j 		loop
+finish_action:
 
-_fire:
+############ DETERMINE DIRECTION ############
 
-	# TODO
+	# 根据坐标，确定走的方向，走到下一格
+	# s4 = x, s5 = y
 
-	j 		loop
+	# if (x == 0) {
+	# 	if (y == 0) x++;
+	# 	else y--;
+	# }
+	# else if (y%2 == 0) {
+	# 	if (x == 9) y++;
+	# 	else x++;
+	# }
+	# else {
+	# 	if (x == 1) y++;
+	# 	else x--
+	# }
+
+	li  	$t0,	10
+	sw		$t0,	VELOCITY
+
+	beq		$s4,	0,	location_if_1
+	rem		$t1,	$s5,	2
+	beq		$t1,	0,	location_if_2
+	beq		$s4,	1,	y_increase
+	j 		x_decrease
+
+location_if_1:
+	beq		$s5,	0,	x_increase
+	j			y_decrease
+
+location_if_2:
+	beq		$s4,	9,	y_increase
+	j			x_increase
+
+x_increase:
+	li		$t0, 	180
+	sw		$t0,	ANGLE
+	li		$t0, 	1
+	sw		$t2,	ANGLE_CONTROL
+	add		$t0,	$s4,	1
+x_increase_loop:
+	lw		$s4,	BOT_X
+	blt		$s4,	0xf,	main_loop
+	ble		$s4,	$t0,	main_loop
+	j 		x_increase_loop
+
+x_decrease:
+	li		$t0, 	0
+	sw		$t0,	ANGLE
+	li		$t0, 	1
+	sw		$t2,	ANGLE_CONTROL
+	sub		$t0,	$s4,	1
+x_decrease_loop:
+	lw		$s4,	BOT_X
+	bgt		$s4,	0x11d,	main_loop
+	bge		$s4,	$t0,	main_loop
+	j 		x_decrease_loop
+
+y_increase:
+	li		$t0, 	270
+	sw		$t0,	ANGLE
+	li		$t0, 	1
+	sw		$t2,	ANGLE_CONTROL
+	add		$t0,	$s5,	1
+y_increase_loop:
+	lw		$s5,	BOT_Y
+	blt		$s5,	0xf,	main_loop
+	ble		$s5,	$t0,	main_loop
+	j 		y_increase_loop
+
+y_decrease:
+	li		$t0, 	90
+	sw		$t0,	ANGLE
+	li		$t0, 	1
+	sw		$t2,	ANGLE_CONTROL
+	sub		$t0,	$s5,	1
+y_decrease_loop:
+	lw		$s5,	BOT_Y
+	bgt		$s5,	0x11d,	main_loop
+	bge		$s5,	$t0,	main_loop
+	j 		y_decrease_loop
+
+############ BACK TO MAIN LOOP ############
+
+finish_walking: # 前面已经跳到 main_loop 了，所以这块其实没用
+
+	j 		main_loop
+
+############ END OF PROGRAM ############
 
 ret:
 	jr		$ra
+
+############ INTERRUPTS ############
 
 fire_interrupt:
 
