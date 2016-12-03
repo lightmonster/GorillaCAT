@@ -1,0 +1,8 @@
+############ USE OF REGISTERS ############
+
+	# s0 = water resource
+	# s1 = seed resource
+	# s2 = fire resource
+	# s3 = tile_data TILE_SCAN
+	# s4 = x
+	# s5 = y
