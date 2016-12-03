@@ -55,7 +55,8 @@ puzzle: .space 4096
 solution: .space 328
 
 .text
-main:
+
+################	Lab 7 & 8 ################
 
 .globl is_single_value_domain
 is_single_value_domain:
@@ -66,13 +67,13 @@ is_single_value_domain:
     li     $v0, 1
     jr	   $ra
 
-isvd_zero:	   
+isvd_zero:
     li	   $v0, 0
     jr	   $ra
 ##################################
 .globl get_domain_for_subtraction
 get_domain_for_subtraction:
-    li     $t0, 1              
+    li     $t0, 1
     li     $t1, 2
     mul    $t1, $t1, $a0            # target * 2
     sll    $t1, $t0, $t1            # 1 << (target * 2)
@@ -80,10 +81,10 @@ get_domain_for_subtraction:
     li     $t1, 0                   # t1 = mask
 
 gdfs_loop:
-    beq    $a2, $0, gdfs_loop_end	
+    beq    $a2, $0, gdfs_loop_end
     and    $t2, $a2, 1              # other_domain & 1
     beq    $t2, $0, gdfs_if_end
-	   
+
     sra    $t2, $t0, $a0            # base_mask >> target
     or     $t1, $t1, $t2            # mask |= (base_mask >> target)
 
@@ -115,7 +116,7 @@ get_domain_for_addition:
     sub    $a0, $0, $s2	                # -domain
     and    $a0, $a0, $s2                # domain & (-domain)
     jal    convert_highest_bit_to_int   # v0 = lower_bound
-	   
+
     sub    $t0, $s1, 1                  # num_cell - 1
     mul    $t0, $t0, $v0                # (num_cell - 1) * lower_bound
     sub    $t0, $s0, $t0                # t0 = high_bits
@@ -126,12 +127,12 @@ get_domain_for_addition:
 gdfa_skip0:
     bge    $t0, $s3, gdfa_skip1
 
-    li     $t1, 1          
+    li     $t1, 1
     sll    $t0, $t1, $t0                # 1 << high_bits
     sub    $t0, $t0, 1                  # (1 << high_bits) - 1
     and    $s2, $s2, $t0                # domain & ((1 << high_bits) - 1)
 
-gdfa_skip1:	   
+gdfa_skip1:
     sub    $t0, $s1, 1                  # num_cell - 1
     mul    $t0, $t0, $s3                # (num_cell - 1) * upper_bound
     sub    $t0, $s0, $t0                # t0 = low_bits
@@ -141,7 +142,7 @@ gdfa_skip1:
     sra    $s2, $s2, $t0                # domain >> (low_bits - 1)
     sll    $s2, $s2, $t0                # domain >> (low_bits - 1) << (low_bits - 1)
 
-gdfa_skip2:	   
+gdfa_skip2:
     move   $v0, $s2                     # return domain
     lw     $ra, 0($sp)
     lw     $s0, 4($sp)
@@ -338,7 +339,7 @@ recursive_backtracking_for_loop:
   jal   clone           # clone(puzzle, &puzzle_copy)
   mul   $t0, $s0, 8     # !!! grid size 8
   lw    $t1, 28($sp)
-  
+
   add   $t1, $t1, $t0   # &puzzle_copy.grid[position]
   sw    $s2, 0($t1)     # puzzle_copy.grid[position].domain = 0x1 << (val - 1);
   move  $a0, $s0
@@ -380,7 +381,7 @@ recursive_backtracking_return:
 ##################################
 .globl get_domain_for_cell
 get_domain_for_cell:
-    # save registers    
+    # save registers
     sub $sp, $sp, 36
     sw $ra, 0($sp)
     sw $s0, 4($sp)
@@ -435,7 +436,7 @@ gdfc_else_if_loop:
 
     beq $t1, $s6 gdfc_else_if_else # branch if pos == position
 
-    
+
 
     move $a0, $s7 # $a0 = puzzle->grid[pos].domain
     jal is_single_value_domain
@@ -467,7 +468,7 @@ gdfc_check_else:
     sll $t2, $s6, 3 # position * 8
     add $a1, $s5, $t2 # &puzzle->grid[position]
     lw  $a1, 0($a1) # puzzle->grid[position].domain
-    # move $a1, $s7 
+    # move $a1, $s7
 
     sll $t1, $t0, 3 # other_pos*8 (actual offset)
     add $t3, $s5, $t1 # &puzzle->grid[other_pos]
@@ -476,8 +477,8 @@ gdfc_check_else:
     jal get_domain_for_subtraction # $v0 = valid_domain = get_domain_for_subtraction()
     # j gdfc_end
 gdfc_end:
-# restore registers
-    
+	# restore registers
+
     lw $ra, 0($sp)
     lw $s0, 4($sp)
     lw $s1, 8($sp)
@@ -487,7 +488,7 @@ gdfc_end:
     lw $s5, 24($sp)
     lw $s6, 28($sp)
     lw $s7, 32($sp)
-    add $sp, $sp, 36    
+    add $sp, $sp, 36
     jr $ra
 #################################
 .globl clone
@@ -511,15 +512,17 @@ clone_for_loop:
 
     add $t5, $t2, $t4 # puzzle(clone).grid ith word
     sw   $t6, 0($t5)
-    
+
     addi $t3, $t3, 1 # i++
-    
+
     j    clone_for_loop
 clone_for_loop_end:
 
     jr  $ra
 ################################
-###************************************************###
+
+main:
+
 ############ USE OF REGISTERS ############
 
 	# s0 = water resource
@@ -532,19 +535,19 @@ clone_for_loop_end:
 ############ ENABLE INTERRUPTS ############
 
 	# enable interrupts
-	li		$t0,	ON_FIRE_MASK
-	or		$t0, 	$t0, 1
-	mtc0	$t0, 	$12
-	li		$t0,	MAX_GROWTH_INT_MASK
-	or		$t0, 	$t0, 1
-	mtc0	$t0, 	$12
-	li		$t0,	REQUEST_PUZZLE_INT_MASK
-	or		$t0, 	$t0, 1
-	mtc0	$t0, 	$12
+	li	$t0,	ON_FIRE_MASK
+	or	$t0,	$t0,	1
+	mtc0	$t0,	$12
+	li	$t0,	MAX_GROWTH_INT_MASK
+	or	$t0,	$t0,	1
+	mtc0	$t0,	$12
+	li	$t0,	REQUEST_PUZZLE_INT_MASK
+	or	$t0,	$t0, 1
+	mtc0	$t0,	$12
 
 start:
-	la		$s3,	tile_data
-	sw		$s3,	TILE_SCAN
+	la	$s3,	tile_data
+	sw	$s3,	TILE_SCAN
 
 main_loop:
 
@@ -554,77 +557,80 @@ main_loop:
 
 	# 检查resource，没有的话request
 
-	bge		$s0,	0,		has_water
-	li		$t0, 	0
-	sw 		$t0,	SET_RESOURCE_TYPE
-	la		$t0,	puzzle_data
-	sw 		$t0, 	REQUEST_PUZZLE
+	bge	$s0,	0,	has_water
+	li	$t0,	0
+	sw	$t0,	SET_RESOURCE_TYPE
+	la	$t0,	puzzle_data
+	sw	$t0,	REQUEST_PUZZLE
 
 has_water:
 
-	bge		$s1,	0,		has_seed
-	li		$t0, 	1
-	sw 		$t0,	SET_RESOURCE_TYPE
-	la		$t0,	puzzle_data
-	sw 		$t0, 	REQUEST_PUZZLE
+	bge	$s1,	0,	has_seed
+	li	$t0,	1
+	sw	$t0,	SET_RESOURCE_TYPE
+	la	$t0,	puzzle_data
+	sw	$t0,	REQUEST_PUZZLE
 
 has_seed:
 
-	bge		$s2,	0,		has_fire
-	li		$t0, 	2
-	sw 		$t0,	SET_RESOURCE_TYPE
-	la		$t0,	puzzle_data
-	sw 		$t0, 	REQUEST_PUZZLE
+	bge	$s2,	0,	has_fire
+	li	$t0,	2
+	sw	$t0,	SET_RESOURCE_TYPE
+	la	$t0,	puzzle_data
+	sw	$t0,	REQUEST_PUZZLE
 
 has_fire:
 
 ############ CHECK STATUS ############
 
-	lw		$s4,	BOT_X
-	lw		$s5,	BOT_Y
-	mul 	$t0,	$s4,	10
-	add		$t0,  $t0,	$s5 # t0 = index
+	lw	$s4,	BOT_X
+	div	$s4,	$s4,	30
+	lw	$s5,	BOT_Y
+	div	$s5,	$s5,	30
+	mul	$t0,	$s4,	10
+	add	$t0,	$t0,	$s5	# t0 = index
+	add	$t0,	$t0,	$s3
 
 	# struct TileInfo {
-	# 	int state; // Either 0 for EMPTY, 1 for GROWING
-	# 	int owning_bot; // 0 for owned by SPIMbot, 1 for owned by cohabitating bot
-	# 	int growth;
-	# 	int water;
+	#	int state; // Either 0 for EMPTY, 1 for GROWING
+	#	int owning_bot; // 0 for owned by SPIMbot, 1 for owned by cohabitating bot
+	#	int growth;
+	#	int water;
 	# };
 
-	lw		$t1,	0($t0)	# t1 = state
-	lw		$t2,	4($t0)	# t2 = owning_bot
-	lw		$t3,	8($t0)	# t3 = growth
-	lw		$t4,	12($t0)	# t4 = water
+	lw	$t1,	0($t0)	# t1 = state
+	lw	$t2,	4($t0)	# t2 = owning_bot
+	lw	$t3,	8($t0)	# t3 = growth
+	lw	$t4,	12($t0)	# t4 = water
 
 	# 对每一格check
-	# if state == 0 & seed > 0	plant
-	# if state == 1 & own == 0 & water > 0	water
-	# if state == 1 & own == 1 & fire > 0	fire
+	# if state == 0 & seed > 0 plant
+	# if state == 1 & own == 0 & water > 0 water
+	# if state == 1 & own == 1 & fire > 0 fire
 
-	bge		$t1,	0,	state_1
+	bge	$t1,	0,	state_1
 
 state_0:
-	beq		$s1,	0,	finish_action
+	beq	$s1,	0,	finish_action
 action_plant:
-	sw 		$0,		SEED_TILE
-	j 		finish_action
+	sw	$0,	SEED_TILE
+	j	finish_action
 
 state_1:
-	bge 	$t2,	0,	others_plant
+	bge	$t2,	0,	others_plant
 
 my_plant:
-	beq		$s0,	0,	finish_action
+	beq	$s0,	0,	finish_action
 action_water:
-	li  	$t0, 	10  # Dump 10 units of water
-  sw  	$t0, 	WATER_TILE
-	j 		finish_action
+	li	$t0,	10	# Dump 10 units of water
+	sw	$t0,	WATER_TILE
+	j	finish_action
 
 others_plant:
-	beq		$s2,	0,	finish_action
+	beq	$s2,	0,	finish_action
 action_fire:
-	sw  	$0, 	BURN_TILE
-	j 		finish_action
+	sw	$0,	BURN_TILE
+	j	finish_action
 
 finish_action:
 
@@ -634,93 +640,93 @@ finish_action:
 	# s4 = x, s5 = y
 
 	# if (x == 0) {
-	# 	if (y == 0) x++;
-	# 	else y--;
+	#	if (y == 0) x++;
+	#	else y--;
 	# }
 	# else if (y%2 == 0) {
-	# 	if (x == 9) y++;
-	# 	else x++;
+	#	if (x == 9) y++;
+	#	else x++;
 	# }
 	# else {
-	# 	if (x == 1) y++;
-	# 	else x--
+	#	if (x == 1) y++;
+	#	else x--
 	# }
 
-	li  	$t0,	10
-	sw		$t0,	VELOCITY
+	li	$t0,	10
+	sw	$t0,	VELOCITY
 
-	beq		$s4,	0,	location_if_1
-	rem		$t1,	$s5,	2
-	beq		$t1,	0,	location_if_2
-	beq		$s4,	1,	y_increase
-	j 		x_decrease
+	beq	$s4,	0,	location_if_1
+	rem	$t1,	$s5,	2
+	beq	$t1,	0,	location_if_2
+	beq	$s4,	1,	y_increase
+	j	x_decrease
 
 location_if_1:
-	beq		$s5,	0,	x_increase
-	j			y_decrease
+	beq	$s5,	0,	x_increase
+	j	y_decrease
 
 location_if_2:
-	beq		$s4,	9,	y_increase
-	j			x_increase
+	beq	$s4,	9,	y_increase
+	j	x_increase
 
 x_increase:
-	li		$t0, 	180
-	sw		$t0,	ANGLE
-	li		$t0, 	1
-	sw		$t2,	ANGLE_CONTROL
-	add		$t0,	$s4,	1
+	li	$t0,	180
+	sw	$t0,	ANGLE
+	li	$t0,	1
+	sw	$t2,	ANGLE_CONTROL
+	add	$t0,	$s4,	1
 x_increase_loop:
-	lw		$s4,	BOT_X
-	blt		$s4,	0xf,	main_loop
-	ble		$s4,	$t0,	main_loop
-	j 		x_increase_loop
+	lw	$s4,	BOT_X
+	blt	$s4,	0xf,	main_loop
+	ble	$s4,	$t0,	main_loop
+	j	x_increase_loop
 
 x_decrease:
-	li		$t0, 	0
-	sw		$t0,	ANGLE
-	li		$t0, 	1
-	sw		$t2,	ANGLE_CONTROL
-	sub		$t0,	$s4,	1
+	li	$t0,	0
+	sw	$t0,	ANGLE
+	li	$t0,	1
+	sw	$t2,	ANGLE_CONTROL
+	sub	$t0,	$s4,	1
 x_decrease_loop:
-	lw		$s4,	BOT_X
-	bgt		$s4,	0x11d,	main_loop
-	bge		$s4,	$t0,	main_loop
-	j 		x_decrease_loop
+	lw	$s4,	BOT_X
+	bgt	$s4,	0x11d,	main_loop
+	bge	$s4,	$t0,	main_loop
+	j	x_decrease_loop
 
 y_increase:
-	li		$t0, 	270
-	sw		$t0,	ANGLE
-	li		$t0, 	1
-	sw		$t2,	ANGLE_CONTROL
-	add		$t0,	$s5,	1
+	li	$t0,	270
+	sw	$t0,	ANGLE
+	li	$t0,	1
+	sw	$t2,	ANGLE_CONTROL
+	add	$t0,	$s5,	1
 y_increase_loop:
-	lw		$s5,	BOT_Y
-	blt		$s5,	0xf,	main_loop
-	ble		$s5,	$t0,	main_loop
-	j 		y_increase_loop
+	lw	$s5,	BOT_Y
+	blt	$s5,	0xf,	main_loop
+	ble	$s5,	$t0,	main_loop
+	j	y_increase_loop
 
 y_decrease:
-	li		$t0, 	90
-	sw		$t0,	ANGLE
-	li		$t0, 	1
-	sw		$t2,	ANGLE_CONTROL
-	sub		$t0,	$s5,	1
+	li	$t0,	90
+	sw	$t0,	ANGLE
+	li	$t0,	1
+	sw	$t2,	ANGLE_CONTROL
+	sub	$t0,	$s5,	1
 y_decrease_loop:
-	lw		$s5,	BOT_Y
-	bgt		$s5,	0x11d,	main_loop
-	bge		$s5,	$t0,	main_loop
-	j 		y_decrease_loop
+	lw	$s5,	BOT_Y
+	bgt	$s5,	0x11d,	main_loop
+	bge	$s5,	$t0,	main_loop
+	j	y_decrease_loop
 
 ############ BACK TO MAIN LOOP ############
 
 finish_walking: # 前面已经跳到 main_loop 了，所以这块其实没用
 
-	j 		main_loop
+	j	main_loop
 
 ############ END OF PROGRAM ############
 
 ret:
-	jr		$ra
+	jr	$ra
 
 ############ INTERRUPTS ############
 
