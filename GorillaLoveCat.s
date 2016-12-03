@@ -536,10 +536,6 @@ main:
 	# or	$t0,	$t0, 1
 	# mtc0	$t0,	$12
 
-start:
-	la	$s3,	tile_data
-	sw	$s3,	TILE_SCAN
-
 	# 校准位置
 init_x_check:
 	lw	$s4,	BOT_X
@@ -605,6 +601,9 @@ init_y_increase_loop:
 
 main_loop:
 
+	la	$s3,	tile_data
+	sw	$s3,	TILE_SCAN
+
 ############ USE OF REGISTERS ############
 
 	# s0 = water resource
@@ -652,10 +651,10 @@ has_fire:
 	div	$s4,	$s4,	30
 	lw	$s5,	BOT_Y
 	div	$s5,	$s5,	30
-	mul	$t0,	$s4,	10
-	add	$t0,	$t0,	$s5
-	mul $t0,	$t0,	16
-	add	$t0,	$t0,	$s3
+	mul	$s6,	$s5,	10
+	add	$s6,	$s6,	$s4
+	mul $s6,	$s6,	16
+	add	$s6,	$s6,	$s3
 
 	# struct TileInfo {
 	#	int state; // Either 0 for EMPTY, 1 for GROWING
@@ -664,17 +663,17 @@ has_fire:
 	#	int water;
 	# };
 
-	lw	$t1,	0($t0)	# t1 = state
-	lw	$t2,	4($t0)	# t2 = owning_bot
-	lw	$t3,	8($t0)	# t3 = growth
-	lw	$t4,	12($t0)	# t4 = water
+	lw	$t1,	0($s6)	# t1 = state
+	lw	$t2,	4($s6)	# t2 = owning_bot
+	lw	$t3,	8($s6)	# t3 = growth
+	lw	$t4,	12($s6)	# t4 = water
 
 	# 对每一格check
 	# if state == 0 & seed > 0 plant
 	# if state == 1 & own == 0 & water > 0 water
 	# if state == 1 & own == 1 & fire > 0 fire
 
-	bge	$t1,	0,	state_1
+	bgt	$t1,	0,	state_1
 
 state_0:
 	beq	$s1,	0,	finish_action
@@ -684,7 +683,7 @@ action_plant:
 	j	finish_action
 
 state_1:
-	bge	$t2,	0,	others_plant
+	bgt	$t2,	0,	others_plant
 
 my_plant:
 	beq	$s0,	0,	finish_action
@@ -731,8 +730,8 @@ finish_action:
 	div	$s5,	$s5,	30
 	beq	$s4,	0,	location_if_1
 	beq $s5,	9,	x_decrease
-	rem	$t1,	$s5,	2
-	beq	$t1,	0,	location_if_2
+	rem	$t5,	$s5,	2
+	beq	$t5,	0,	location_if_2
 	beq	$s4,	1,	y_increase
 	j	x_decrease
 
