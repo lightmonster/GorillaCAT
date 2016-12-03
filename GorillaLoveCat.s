@@ -537,6 +537,7 @@ main:
 	mtc0	$t0,	$12
 
   add $s7,  $0, 0
+  add $a3,  $0, 0
 
 	# 校准位置
 init_x_check:
@@ -711,6 +712,9 @@ has_fire:
 state_0:
 	beq	$s1,	0,	finish_action
 action_plant:
+  add $a3,  $a3,  1
+  rem $t0,  $a3,  3
+  bne $t0,  0,  finish_action
 	sw	$0,	SEED_TILE
 	sub	$s1,	$s1,	1
 	j	finish_action
