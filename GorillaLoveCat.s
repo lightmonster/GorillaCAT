@@ -677,6 +677,7 @@ x_increase:
 	add	$t0,	$s4,	1
 x_increase_loop:
 	lw	$s4,	BOT_X
+	div	$s4,	$s4,	30
 	blt	$s4,	0xf,	main_loop
 	ble	$s4,	$t0,	main_loop
 	j	x_increase_loop
@@ -689,6 +690,7 @@ x_decrease:
 	sub	$t0,	$s4,	1
 x_decrease_loop:
 	lw	$s4,	BOT_X
+	div	$s4,	$s4,	30
 	bgt	$s4,	0x11d,	main_loop
 	bge	$s4,	$t0,	main_loop
 	j	x_decrease_loop
@@ -701,6 +703,7 @@ y_increase:
 	add	$t0,	$s5,	1
 y_increase_loop:
 	lw	$s5,	BOT_Y
+	div	$s5,	$s5,	30
 	blt	$s5,	0xf,	main_loop
 	ble	$s5,	$t0,	main_loop
 	j	y_increase_loop
@@ -713,6 +716,7 @@ y_decrease:
 	sub	$t0,	$s5,	1
 y_decrease_loop:
 	lw	$s5,	BOT_Y
+	div	$s5,	$s5,	30
 	bgt	$s5,	0x11d,	main_loop
 	bge	$s5,	$t0,	main_loop
 	j	y_decrease_loop
@@ -730,8 +734,67 @@ ret:
 
 ############ INTERRUPTS ############
 
+.kdata
+chunkIH:	.space 8
+non_intrpt_str:	.asciiz	"Non-interrupt exception\n"
+unhandled_str:	.asciiz	"Unhandled interrupt type\n"
+
+.ktext 0x80000180
+
+interrupt_handler:
+.set noat
+	move	$k1, $at		# Save $at
+.set at
+	la	$k0,	chunkIH
+	sw	$a0,	0($k0)		# Get some free registers
+	sw	$a1,	4($k0)		# by storing them to a global variable
+
+	mfc0	$k0,	$13		# Get Cause register
+	srl	$a0,	$k0,	2
+	and	$a0,	$a0,	0xf	# ExcCode field
+	bne	$a0,	0,	non_intrpt
+
+interrupt_dispatch:			# Interrupt:
+
+	mfc0	$k0,	$13		# Get Cause register, again
+	beq	$k0,	0,	done		# handled all outstanding interrupts
+
+	# add dispatch for other interrupt types here.
+	and	$a0,	$k0,	ON_FIRE_MASK
+	bne	$a0,	0,	fire_interrupt
+
+	and	$a0,	$k0,	MAX_GROWTH_INT_MASK
+	bne	$a0,	0,	max_growth_interrupt
+
+	and	$a0,	$k0,	REQUEST_PUZZLE_INT_MASK
+	bne	$a0,	0,	request_puzzle_interrupt
+
+	li	$v0,	PRINT_STRING	# Unhandled interrupt types
+	la	$a0,	unhandled_str
+	syscall
+	j		done
+
+############ HANDLE INTERRUPTS ############
+
 fire_interrupt:
 
 max_growth_interrupt:
 
 request_puzzle_interrupt:
+
+############ END OF INTERRUPTS ############
+
+non_intrpt:				# was some non-interrupt
+	li	$v0, PRINT_STRING
+	la	$a0, non_intrpt_str
+	syscall				# print out an error message
+	# fall through to done
+
+done:
+	la	$k0,	chunkIH
+	lw	$a0,	0($k0)		# Restore saved registers
+	lw	$a1,	4($k0)
+.set noat
+	move	$at,	$k1		# Restore $at
+.set at
+	eret
