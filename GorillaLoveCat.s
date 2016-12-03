@@ -57,7 +57,6 @@ solution: .space 328
 .text
 
 ################	Lab 7 & 8 ################
-
 .globl is_single_value_domain ####### CODE OF LAB 7 & 8
   is_single_value_domain:
       beq    $a0, $0, isvd_zero     # return 0 if domain == 0
@@ -526,18 +525,18 @@ main:
 ############ ENABLE INTERRUPTS ############
 
 	# enable interrupts
-	li	$t0,	ON_FIRE_MASK
-	or	$t0,	$t0,	1
-	mtc0	$t0,	$12
+	# li	$t0,	ON_FIRE_MASK
+	# or	$t0,	$t0,	1
+	# mtc0	$t0,	$12
 	li	$t0,	MAX_GROWTH_INT_MASK
 	or	$t0,	$t0,	1
 	mtc0	$t0,	$12
-	li	$t0,	REQUEST_PUZZLE_INT_MASK
-	or	$t0,	$t0, 1
-	mtc0	$t0,	$12
+	# li	$t0,	REQUEST_PUZZLE_INT_MASK
+	# or	$t0,	$t0,	1
+	# mtc0	$t0,	$12
 
-  add $s7,  $0, 0
-  add $a3,  $0, 0
+	add	$s7,	$0,	0
+	add	$a3,	$0,	0
 
 	# 校准位置
 init_x_check:
@@ -545,9 +544,9 @@ init_x_check:
 	div	$t1,	$s4,	30
 	mul	$t1,	$t1,	30
 	add	$t1,	$t1,	15
-	beq		$s4,	$t1,	init_y_check
-	bgt		$s4, 	$t1,	init_x_decrease
-	j 		init_x_increase
+	beq	$s4,	$t1,	init_y_check
+	bgt	$s4,	$t1,	init_x_decrease
+	j	init_x_increase
 
 init_x_decrease:
 	li	$t0,	180
@@ -555,10 +554,10 @@ init_x_decrease:
 	li	$t0,	1
 	sw	$t0,	ANGLE_CONTROL
 init_x_decrease_loop:
-	lw		$s4,	BOT_X
-	blt		$s4,	0xf,	init_y_check
-	ble		$s4,	$t1,	init_y_check
-	j 		init_x_decrease_loop
+	lw	$s4,	BOT_X
+	blt	$s4,	0xf,	init_y_check
+	ble	$s4,	$t1,	init_y_check
+	j	init_x_decrease_loop
 
 init_x_increase:
 	li	$t0,	0
@@ -566,19 +565,19 @@ init_x_increase:
 	li	$t0,	1
 	sw	$t0,	ANGLE_CONTROL
 init_x_increase_loop:
-	lw		$s4,	BOT_X
-	bgt		$s4,	0x11d,	init_y_check
-	bge		$s4,	$t1,	init_y_check
-	j 		init_x_increase_loop
+	lw	$s4,	BOT_X
+	bgt	$s4,	0x11d,	init_y_check
+	bge	$s4,	$t1,	init_y_check
+	j	init_x_increase_loop
 
 init_y_check:
 	lw	$s5,	BOT_Y
 	div	$t1,	$s5,	30
 	mul	$t1,	$t1,	30
 	add	$t1,	$t1,	15
-	beq		$s5,	$t1,	main_loop
-	bgt		$s5, 	$t1,	init_y_decrease
-	j 		init_y_increase
+	beq	$s5,	$t1,	main_loop
+	bgt	$s5,	$t1,	init_y_decrease
+	j	init_y_increase
 
 init_y_decrease:
 	li	$t0,	270
@@ -586,10 +585,10 @@ init_y_decrease:
 	li	$t0,	1
 	sw	$t0,	ANGLE_CONTROL
 init_y_decrease_loop:
-	lw		$s5,	BOT_Y
-	blt		$s5,	0xf,	main_loop
-	ble		$s5,	$t1,	main_loop
-	j 		init_y_decrease_loop
+	lw	$s5,	BOT_Y
+	blt	$s5,	0xf,	main_loop
+	ble	$s5,	$t1,	main_loop
+	j	init_y_decrease_loop
 
 init_y_increase:
 	li	$t0,	90
@@ -597,56 +596,46 @@ init_y_increase:
 	li	$t0,	1
 	sw	$t0,	ANGLE_CONTROL
 init_y_increase_loop:
-	lw		$s5,	BOT_Y
-	bgt		$s5,	0x11d,	main_loop
-	bge		$s5,	$t1,	main_loop
-	j 		init_y_increase_loop
+	lw	$s5,	BOT_Y
+	bgt	$s5,	0x11d,	main_loop
+	bge	$s5,	$t1,	main_loop
+	j	init_y_increase_loop
 
-
-solve_puzzle:
-  sw $0,  VELOCITY
-
-  la $t0, solution
-  add $t1,  $t0,  328
-zero_loop:
-  bge $t0,  $t1,  done_zero
-  sw $0,  0($t0)
-  add $t0,  $t0,  4
-  j zero_loop
-done_zero:
-  la $a0, solution
-  jal recursive_backtracking
-  sw $a0, SUBMIT_SOLUTION
-  add $s7,  $0,  0
-  j request
+#
+# solve_puzzle:
+# 	sw	$0,	VELOCITY
+#
+# 	la	$t0,	solution
+# 	add $t1,  $t0,  328
+# zero_loop:
+#   bge $t0,  $t1,  done_zero
+#   sw $0,  0($t0)
+#   add $t0,  $t0,  4
+#   j zero_loop
+# done_zero:
+#   la $a0, solution
+#   jal recursive_backtracking
+#   sw $a0, SUBMIT_SOLUTION
+#   add $s7,  $0,  0
+#   j request
 
 main_loop:
 
 	la	$s3,	tile_data
 	sw	$s3,	TILE_SCAN
 
-############ USE OF REGISTERS ############
-
-
-	# s0 = water resource
-	# s1 = seed resource
-	# s2 = fire resource
-	# s3 = tile_data TILE_SCAN
-	# s4 = x
-	# s5 = y
-
 ############ CHECK RESOURCES ############
 
 check_request_status:
 
-  beq $s7,  1,  solve_puzzle
-  beq $s7,  2,  has_fire
+	# beq	$s7,	1,	solve_puzzle
+	# beq	$s7,	2,	has_fire
 
 request:
 
-	lw $s0,	GET_NUM_WATER_DROPS
-	lw $s1,	GET_NUM_SEEDS
-	lw $s2,	GET_NUM_FIRE_STARTERS
+	lw	$s0,	GET_NUM_WATER_DROPS
+	lw	$s1,	GET_NUM_SEEDS
+	lw	$s2,	GET_NUM_FIRE_STARTERS
 
 	# 检查resource，没有的话request
 
@@ -655,27 +644,27 @@ request:
 	sw	$t0,	SET_RESOURCE_TYPE
 	la	$a0,	puzzle_data
 	sw	$a0,	REQUEST_PUZZLE
-  add $s7,  $0,  2
-  j has_fire
+	# add	$s7,	$0,	2
+	# j	has_fire
 
 has_water:
 
 	bgt	$s1,	0,	has_seed
 	li	$t0,	1
 	sw	$t0,	SET_RESOURCE_TYPE
-  la	$a0,	puzzle_data
+	la	$a0,	puzzle_data
 	sw	$a0,	REQUEST_PUZZLE
-  add $s7,  $0,  2
-  j has_fire
+	# add	$s7,	$0,	2
+	# j	has_fire
 
 has_seed:
 
 	bgt	$s2,	0,	has_fire
 	li	$t0,	2
 	sw	$t0,	SET_RESOURCE_TYPE
-  la	$a0,	puzzle_data
+	la	$a0,	puzzle_data
 	sw	$a0,	REQUEST_PUZZLE
-  add $s7,  $0,  2
+	# add	$s7,	$0,	2
 
 has_fire:
 
@@ -712,9 +701,9 @@ has_fire:
 state_0:
 	beq	$s1,	0,	finish_action
 action_plant:
-  add $a3,  $a3,  1
-  rem $t0,  $a3,  3
-  bne $t0,  0,  finish_action
+	add	$a3,	$a3,	1
+	rem	$t0,	$a3,	5
+	bne	$t0,	0,	finish_action
 	sw	$0,	SEED_TILE
 	sub	$s1,	$s1,	1
 	j	finish_action
@@ -854,21 +843,21 @@ unhandled_str:	.asciiz	"Unhandled interrupt type\n"
 
 interrupt_handler:
 .set noat
-	move	$k1, $at		# Save $at
+	move	$k1, $at	# Save $at
 .set at
 	la	$k0,	chunkIH
-	sw	$a0,	0($k0)		# Get some free registers
-	sw	$a1,	4($k0)		# by storing them to a global variable
+	sw	$a0,	0($k0)	# Get some free registers
+	sw	$a1,	4($k0)	# by storing them to a global variable
 
-	mfc0	$k0,	$13		# Get Cause register
+	mfc0	$k0,	$13	# Get Cause register
 	srl	$a0,	$k0,	2
 	and	$a0,	$a0,	0xf	# ExcCode field
 	bne	$a0,	0,	non_intrpt
 
-interrupt_dispatch:			# Interrupt:
+interrupt_dispatch:	# Interrupt:
 
-	mfc0	$k0,	$13		# Get Cause register, again
-	beq	$k0,	0,	done		# handled all outstanding interrupts
+	mfc0	$k0,	$13	# Get Cause register, again
+	beq	$k0,	0,	done	# handled all outstanding interrupts
 
 	# add dispatch for other interrupt types here.
 	and	$a0,	$k0,	ON_FIRE_MASK
@@ -885,93 +874,164 @@ interrupt_dispatch:			# Interrupt:
 	syscall
 	j	done
 
-############ HANDLE INTERRUPTS ############
+############ FIRE INTERRUPTS ############
 
 fire_interrupt: ## from lab 10.2
 
-  sw		$a1,	ON_FIRE_ACK	# acknowledge interrupt
-  lw		$t8,	GET_FIRE_LOC
-  and 	$t7,	$t8,	0xffff
-  mul		$t7,	$t7,	30
-  add 	$t7,	$t7,	15 	# t7: y
-  srl		$t8,	$t8,	16
-  mul		$t8,	$t8,	30
-  add 	$t8,	$t8,	15 	# t8: x
+	sw	$a1,	ON_FIRE_ACK	# acknowledge interrupt
+	lw	$t8,	GET_FIRE_LOC
+	and	$t7,	$t8,	0xffff
+	mul	$t7,	$t7,	30
+	add	$t7,	$t7,	15 	# t7: y
+	srl	$t8,	$t8,	16
+	mul	$t8,	$t8,	30
+	add	$t8,	$t8,	15 	# t8: x
 
-  li 		$t2,	1 			# t2 = 1
-  li	 	$t3,	10
-  sw		$t3,	VELOCITY
+	li	$t2,	1	# t2 = 1
+	li	$t3,	10
+	sw	$t3,	VELOCITY
 
-  li 		$t3,	0
-  li 		$t4,	90
-  li 		$t5,	180
-  li 		$t6,	270
+	li	$t3,	0
+	li	$t4,	90
+	li	$t5,	180
+	li	$t6,	270
 
 find:
-  lw		$t9,	BOT_X
-  beq		$t9,	$t8,	x_equal
-  bgt		$t9, 	$t8,	x_big
-  j 		x_small
+	lw	$t9,	BOT_X
+	beq	$t9,	$t8,	x_equal
+	bgt	$t9,	$t8,	x_big
+	j	x_small
 
 x_big:
-  sw		$t5,	ANGLE
-  sw		$t2,	ANGLE_CONTROL
+	sw	$t5,	ANGLE
+	sw	$t2,	ANGLE_CONTROL
 x_big_loop:
-  lw		$t9,	BOT_X
-  blt		$t9,	0xf,	x_equal
-  ble		$t9,	$t8,	x_equal
-  j 		x_big_loop
+	lw	$t9,	BOT_X
+	blt	$t9,	0xf,	x_equal
+	ble	$t9,	$t8,	x_equal
+	j	x_big_loop
 
 x_small:
-  sw		$t3,	ANGLE
-  sw		$t2,	ANGLE_CONTROL
+	sw	$t3,	ANGLE
+	sw	$t2,	ANGLE_CONTROL
 x_small_loop:
-  lw		$t9,	BOT_X
-  bgt		$t9,	0x11d,	x_equal
-  bge		$t9,	$t8,	x_equal
-  j 		x_small_loop
+	lw	$t9,	BOT_X
+	bgt	$t9,	0x11d,	x_equal
+	bge	$t9,	$t8,	x_equal
+	j	x_small_loop
 
 x_equal:
 
-  lw 		$t9,	BOT_Y		# t9 = y
-  beq		$t9,	$t7,	y_equal
-  bgt		$t9, 	$t7,	y_big
-  j 		y_small
+	lw	$t9,	BOT_Y	# t9 = y
+	beq	$t9,	$t7,	y_equal
+	bgt	$t9,	$t7,	y_big
+	j	y_small
 
 y_big:
-  sw		$t6,	ANGLE
-  sw		$t2,	ANGLE_CONTROL
+	sw	$t6,	ANGLE
+	sw	$t2,	ANGLE_CONTROL
 y_big_loop:
-  lw		$t9,	BOT_Y
-  blt		$t9,	0xf,	y_equal
-  ble		$t9,	$t7,	y_equal
-  j 		y_big_loop
+	lw	$t9,	BOT_Y
+	blt	$t9,	0xf,	y_equal
+	ble	$t9,	$t7,	y_equal
+	j	y_big_loop
 
 y_small:
-  sw		$t4,	ANGLE
-  sw		$t2,	ANGLE_CONTROL
+	sw	$t4,	ANGLE
+	sw	$t2,	ANGLE_CONTROL
 y_small_loop:
-  lw		$t9,	BOT_Y
-  bgt		$t9,	0x11d,	y_equal
-  bge		$t9,	$t7,	y_equal
-  j 		y_small_loop
+	lw	$t9,	BOT_Y
+	bgt	$t9,	0x11d,	y_equal
+	bge	$t9,	$t7,	y_equal
+	j	y_small_loop
 
 y_equal:
 
-  sw		$t2,	PUT_OUT_FIRE
-  sw		$0,		VELOCITY		# drive
+	sw	$t2,	PUT_OUT_FIRE
+	sw	$0,	VELOCITY	# drive
 
-  j		interrupt_dispatch
+	j	interrupt_dispatch
+
+############ MAX GROWTH INTERRUPTS ############
 
 max_growth_interrupt:
 
+	sw	$zero,	MAX_GROWTH_ACK	#GROW acknoledge
+	lw	$t9,	MAX_GROWTH_TILE	#location of the tile
+	and	$t0,	$t9,	0xffff0000
+	srl	$t0,	$t0,	16	#Store x_index to $t0
+	and $t1,	$t9,	0x0000ffff	#Store y_index to $t1
+	mul $t0,	$t0,	30
+	mul $t1,	$t1,	30
+	add $t0,	$t0,	15	#Convert x_index to location
+	add $t1,	$t1,	15	#Convert y_index to location
+
+go_to_harvest:
+check_y_har:
+	lw	$t5,	BOT_Y #read bot-Y
+	beq	$t1,	$t5,	find_y_har #beq $t7, 0, find_y
+	bgt	$t1,	$t5,	move_downward_har
+move_upward_har:
+	li	$t8,	270 #temp, store angle
+	sw	$t8,	ANGLE #set angle to 90, upward
+	li	$t9,	1
+	sw	$t9,	ANGLE_CONTROL
+	add	$t8,	$zero, 10 #set v to -1
+	sw	$t8,	VELOCITY #set velocity to 1
+	j	check_y_har
+
+move_downward_har:
+	li $t8, 90 #temp, store angle
+	sw $t8, ANGLE #set angle to 90, downward
+	li $t9, 1
+	sw $t9, ANGLE_CONTROL
+	li $t8, 10 #temp, store velocity
+	sw $t8, VELOCITY #set velocity to 1
+	j check_y_har
+
+find_y_har:
+	#stop
+	li $t8, 0 #temp, store velocity
+	sw $t8, VELOCITY #set velocity to 0
+
+check_x_har:
+	lw $t5, BOT_X
+	beq $t0, $t5, On_har_loc
+	bgt $t0, $t5, move_right_fire #distance-X, move right if >0
+
+move_left_fire:
+	li $t8, 180 #temp, store angle
+	sw $t8, ANGLE #set angle to 90, upward
+	li $t9, 1
+	sw $t9, ANGLE_CONTROL
+	add $t8, $zero, 10 #temp, store velocity
+	sw $t8, VELOCITY #set velocity to 1
+	j check_x_har
+
+move_right_fire:
+	li $t8, 0 #temp, store angle
+	sw $t8, ANGLE #set angle to 90, upward
+	li $t9, 1
+	sw $t9, ANGLE_CONTROL
+	li $t8, 10 #temp, store velocity
+	sw $t8, VELOCITY #set velocity to -1
+	j check_x_har
+
+On_har_loc:
+	li $t8, 0 	#temp, store velocity
+	sw $t8, VELOCITY 	#set velocity to -1
+	sw $t9, HARVEST_TILE	#Put out the fire
+
+	j interrupt_dispatch
+
+
 request_puzzle_interrupt:
 
-	sw		$a1,	REQUEST_PUZZLE_ACK	# acknowledge interrupt
+	# sw	$a1,	REQUEST_PUZZLE_ACK	# acknowledge interrupt
 
-  add $s7,  $0, 1
+	# add $s7,	$0, 1
 
-  j		interrupt_dispatch
+	j	interrupt_dispatch
 
 ############ END OF INTERRUPTS ############
 
