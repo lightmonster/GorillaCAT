@@ -6,3 +6,10 @@
 	# s3 = tile_data TILE_SCAN
 	# s4 = x
 	# s5 = y
+
+	# struct TileInfo {
+	#	int state; // Either 0 for EMPTY, 1 for GROWING
+	#	int owning_bot; // 0 for owned by SPIMbot, 1 for owned by cohabitating bot
+	#	int growth;
+	#	int water;
+	# };
