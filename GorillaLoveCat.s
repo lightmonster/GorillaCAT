@@ -721,9 +721,13 @@ finish_action:
 	#	else x--
 	# }
 
-	li	$t0,	10
+	li	$t0,	1
 	sw	$t0,	VELOCITY
 
+	lw	$s4,	BOT_X
+	div	$s4,	$s4,	30
+	lw	$s5,	BOT_Y
+	div	$s5,	$s5,	30
 	beq	$s4,	0,	location_if_1
 	rem	$t1,	$s5,	2
 	beq	$t1,	0,	location_if_2
