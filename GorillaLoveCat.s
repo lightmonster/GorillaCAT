@@ -709,19 +709,20 @@ finish_action:
 	# s4 = x, s5 = y
 
 	# if (x == 0) {
-	#	if (y == 0) x++;
-	#	else y--;
+	# 	if (y == 0) x++;
+	# 	else y--;
 	# }
+	# else if (y == 9) x--;
 	# else if (y%2 == 0) {
-	#	if (x == 9) y++;
-	#	else x++;
+	# 	if (x == 9) y++;
+	# 	else x++;
 	# }
 	# else {
-	#	if (x == 1) y++;
-	#	else x--
+	# 	if (x == 1) y++;
+	# 	else x--
 	# }
 
-	li	$t0,	1
+	li	$t0,	10
 	sw	$t0,	VELOCITY
 
 	lw	$s4,	BOT_X
@@ -729,6 +730,7 @@ finish_action:
 	lw	$s5,	BOT_Y
 	div	$s5,	$s5,	30
 	beq	$s4,	0,	location_if_1
+	beq $s5,	9,	x_decrease
 	rem	$t1,	$s5,	2
 	beq	$t1,	0,	location_if_2
 	beq	$s4,	1,	y_increase
@@ -753,7 +755,7 @@ x_decrease_loop:
 	lw	$s4,	BOT_X
 	blt	$s4,	0xf,	main_loop
 	ble	$s4,	$t0,	main_loop
-	j	x_increase_loop
+	j	x_decrease_loop
 
 x_increase:
 	li	$t0,	0
@@ -766,7 +768,7 @@ x_increase_loop:
 	lw	$s4,	BOT_X
 	bgt	$s4,	0x11d,	main_loop
 	bge	$s4,	$t0,	main_loop
-	j	x_decrease_loop
+	j	x_increase_loop
 
 y_decrease:
 	li	$t0,	270
@@ -779,7 +781,7 @@ y_decrease_loop:
 	lw	$s5,	BOT_Y
 	blt	$s5,	0xf,	main_loop
 	ble	$s5,	$t0,	main_loop
-	j	y_increase_loop
+	j	y_decrease_loop
 
 y_increase:
 	li	$t0,	90
@@ -792,7 +794,7 @@ y_increase_loop:
 	lw	$s5,	BOT_Y
 	bgt	$s5,	0x11d,	main_loop
 	bge	$s5,	$t0,	main_loop
-	j	y_decrease_loop
+	j	y_increase_loop
 
 ############ BACK TO MAIN LOOP ############
 
