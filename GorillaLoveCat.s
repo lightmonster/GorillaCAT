@@ -588,7 +588,7 @@ has_fire:
 	lw	$s5,	BOT_Y
 	div	$s5,	$s5,	30
 	mul	$t0,	$s4,	10
-	add	$t0,	$t0,	$s5	# t0 = index
+	add	$t0,	$t0,	$s5
 	add	$t0,	$t0,	$s3
 
 	# struct TileInfo {
@@ -672,52 +672,52 @@ location_if_2:
 	beq	$s4,	9,	y_increase
 	j	x_increase
 
-x_increase:
+x_decrease:
 	li	$t0,	180
 	sw	$t0,	ANGLE
 	li	$t0,	1
 	sw	$t0,	ANGLE_CONTROL
-	add	$t0,	$s4,	1
-x_increase_loop:
+	mul	$t0,	$s4,	30
+	add	$t0,	$t0,	45
+x_decrease_loop:
 	lw	$s4,	BOT_X
-	div	$s4,	$s4,	30
 	blt	$s4,	0xf,	main_loop
 	ble	$s4,	$t0,	main_loop
 	j	x_increase_loop
 
-x_decrease:
+x_increase:
 	li	$t0,	0
 	sw	$t0,	ANGLE
 	li	$t0,	1
 	sw	$t0,	ANGLE_CONTROL
 	sub	$t0,	$s4,	1
-x_decrease_loop:
+x_increase_loop:
 	lw	$s4,	BOT_X
 	div	$s4,	$s4,	30
 	bgt	$s4,	0x11d,	main_loop
 	bge	$s4,	$t0,	main_loop
 	j	x_decrease_loop
 
-y_increase:
+y_decrease:
 	li	$t0,	270
 	sw	$t0,	ANGLE
 	li	$t0,	1
 	sw	$t0,	ANGLE_CONTROL
 	add	$t0,	$s5,	1
-y_increase_loop:
+y_decrease_loop:
 	lw	$s5,	BOT_Y
 	div	$s5,	$s5,	30
 	blt	$s5,	0xf,	main_loop
 	ble	$s5,	$t0,	main_loop
 	j	y_increase_loop
 
-y_decrease:
+y_increase:
 	li	$t0,	90
 	sw	$t0,	ANGLE
 	li	$t0,	1
 	sw	$t0,	ANGLE_CONTROL
 	sub	$t0,	$s5,	1
-y_decrease_loop:
+y_increase_loop:
 	lw	$s5,	BOT_Y
 	div	$s5,	$s5,	30
 	bgt	$s5,	0x11d,	main_loop
