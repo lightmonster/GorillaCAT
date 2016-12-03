@@ -678,7 +678,7 @@ x_decrease:
 	li	$t0,	1
 	sw	$t0,	ANGLE_CONTROL
 	mul	$t0,	$s4,	30
-	add	$t0,	$t0,	45
+	sub	$t0,	$t0,	15
 x_decrease_loop:
 	lw	$s4,	BOT_X
 	blt	$s4,	0xf,	main_loop
@@ -690,10 +690,10 @@ x_increase:
 	sw	$t0,	ANGLE
 	li	$t0,	1
 	sw	$t0,	ANGLE_CONTROL
-	sub	$t0,	$s4,	1
+	mul	$t0,	$s4,	30
+	add	$t0,	$t0,	45
 x_increase_loop:
 	lw	$s4,	BOT_X
-	div	$s4,	$s4,	30
 	bgt	$s4,	0x11d,	main_loop
 	bge	$s4,	$t0,	main_loop
 	j	x_decrease_loop
@@ -703,10 +703,10 @@ y_decrease:
 	sw	$t0,	ANGLE
 	li	$t0,	1
 	sw	$t0,	ANGLE_CONTROL
-	add	$t0,	$s5,	1
+	mul	$t0,	$s5,	30
+	sub	$t0,	$t0,	15
 y_decrease_loop:
 	lw	$s5,	BOT_Y
-	div	$s5,	$s5,	30
 	blt	$s5,	0xf,	main_loop
 	ble	$s5,	$t0,	main_loop
 	j	y_increase_loop
@@ -716,10 +716,10 @@ y_increase:
 	sw	$t0,	ANGLE
 	li	$t0,	1
 	sw	$t0,	ANGLE_CONTROL
-	sub	$t0,	$s5,	1
+	mul	$t0,	$s5,	30
+	add	$t0,	$t0,	45
 y_increase_loop:
 	lw	$s5,	BOT_Y
-	div	$s5,	$s5,	30
 	bgt	$s5,	0x11d,	main_loop
 	bge	$s5,	$t0,	main_loop
 	j	y_decrease_loop
