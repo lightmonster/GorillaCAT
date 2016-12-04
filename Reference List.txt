@@ -6,6 +6,11 @@
 	# s3 = tile_data TILE_SCAN
 	# s4 = x
 	# s5 = y
+	# s6 = &tile_data[i]
+	# s7 = interrupt
+		0	可以request
+		1	puzzle已好
+		2	正在request，等
 
 	# struct TileInfo {
 	#	int state; // Either 0 for EMPTY, 1 for GROWING
