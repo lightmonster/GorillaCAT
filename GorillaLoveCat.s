@@ -526,15 +526,9 @@ main:
 
 	# enable interrupts
 	li	$t0,	BONK_MASK
-	or	$t0,	$t0,	1
-	mtc0	$t0,	$12
-	li	$t0,	ON_FIRE_MASK
-	or	$t0,	$t0,	1
-	mtc0	$t0,	$12
-	li	$t0,	MAX_GROWTH_INT_MASK
-	or	$t0,	$t0,	1
-	mtc0	$t0,	$12
-	li	$t0,	REQUEST_PUZZLE_INT_MASK
+    or	$t0,	$t0,	ON_FIRE_MASK
+    or	$t0,	$t0,	MAX_GROWTH_INT_MASK
+    or	$t0,	$t0,	REQUEST_PUZZLE_INT_MASK
 	or	$t0,	$t0,	1
 	mtc0	$t0,	$12
 
@@ -605,7 +599,7 @@ init_y_increase_loop:
 	j	init_y_increase_loop
 
 solve_puzzle:
-	sw	$0,	VELOCITY
+	# sw	$0,	VELOCITY
 	la	$t0,	solution
 	add	$t1,	$t0,	328
 zero_loop:
@@ -694,6 +688,7 @@ has_fire:
 
 	# 对每一格check
 	# if state == 0 & seed > 0 plant
+    # if state == 1 & own == 0 & growth == 512 harvest
 	# if state == 1 & own == 0 & water > 0 water
 	# if state == 1 & own == 1 & fire > 0 fire
 
@@ -703,8 +698,8 @@ state_0:
 	beq	$s1,	0,	finish_action
 action_plant:
 	add	$a3,	$a3,	1
-	rem	$t0,	$a3,	5
-	bne	$t0,	0,	finish_action
+	rem	$t0,	$a3,	4
+	bne	$t0,	1,	finish_action
 	sw	$0,	SEED_TILE
 	sub	$s1,	$s1,	1
 	j	finish_action
@@ -713,6 +708,7 @@ state_1:
 	bgt	$t2,	0,	others_plant
 
 my_plant:
+    beq	$t3,	512,	action_harvest
 	beq	$s0,	0,	finish_action
 action_water:
 	li	$t0,	10	# Dump 10 units of water
@@ -726,6 +722,11 @@ action_fire:
 	sw	$0,	BURN_TILE
 	sub	$s2,	$s2,	1
 	j	finish_action
+
+action_harvest:
+    add $t0,    $0,    1
+    sw	$t0,	HARVEST_TILE	#Put out the fire
+
 
 finish_action:
 
@@ -889,87 +890,109 @@ bonk_interrupt:
 bonk_skip:
 	sw	$a1,	0xffff0010($zero)
 	j	interrupt_dispatch
+
 ############ FIRE INTERRUPTS ############
 
 fire_interrupt: ## from lab 10.2
 
+    sub $sp,    $sp,    16
+    sw $t0, 0($sp)
+    sw $t1, 4($sp)
+    sw $t2, 8($sp)
+    sw $t3, 12($sp)
+
 	sw	$a1,	ON_FIRE_ACK	# acknowledge interrupt
-	lw	$t8,	GET_FIRE_LOC
-	and	$t7,	$t8,	0xffff
-	mul	$t7,	$t7,	30
-	add	$t7,	$t7,	15 	# t7: y
-	srl	$t8,	$t8,	16
-	mul	$t8,	$t8,	30
-	add	$t8,	$t8,	15 	# t8: x
+	lw	$t0,	GET_FIRE_LOC
+	and	$t1,	$t0,	0xffff
+	mul	$t1,	$t1,	30
+	add	$t1,	$t1,	15 	# t1: y
+	srl	$t0,	$t0,	16
+	mul	$t0,	$t0,	30
+	add	$t0,	$t0,	15 	# t0: x
 
-	li	$t2,	1	# t2 = 1
-	li	$t3,	10
-	sw	$t3,	VELOCITY
-
-	li	$t3,	0
-	li	$t4,	90
-	li	$t5,	180
-	li	$t6,	270
+	li	$t2,	10
+	sw	$t2,	VELOCITY
 
 find:
-	lw	$t9,	BOT_X
-	beq	$t9,	$t8,	x_equal
-	bgt	$t9,	$t8,	x_big
+	lw	$t3,	BOT_X
+	beq	$t3,	$t0,	x_equal
+	bgt	$t3,	$t0,	x_big
 	j	x_small
 
 x_big:
-	sw	$t5,	ANGLE
+    li	$t2,	180
+	sw	$t2,	ANGLE
+    li	$t2,	1
 	sw	$t2,	ANGLE_CONTROL
 x_big_loop:
-	lw	$t9,	BOT_X
-	blt	$t9,	0xf,	x_equal
-	ble	$t9,	$t8,	x_equal
+	lw	$t3,	BOT_X
+	blt	$t3,	0xf,	x_equal
+	ble	$t3,	$t0,	x_equal
 	j	x_big_loop
 
 x_small:
+    li	$t2,	0
 	sw	$t3,	ANGLE
+    li	$t2,	1
 	sw	$t2,	ANGLE_CONTROL
 x_small_loop:
-	lw	$t9,	BOT_X
-	bgt	$t9,	0x11d,	x_equal
-	bge	$t9,	$t8,	x_equal
+	lw	$t3,	BOT_X
+	bgt	$t3,	0x11d,	x_equal
+	bge	$t3,	$t0,	x_equal
 	j	x_small_loop
 
 x_equal:
 
-	lw	$t9,	BOT_Y	# t9 = y
-	beq	$t9,	$t7,	y_equal
-	bgt	$t9,	$t7,	y_big
+	lw	$t3,	BOT_Y	# t3 = y
+	beq	$t3,	$t1,	y_equal
+	bgt	$t3,	$t1,	y_big
 	j	y_small
 
 y_big:
-	sw	$t6,	ANGLE
+    li	$t2,	270
+	sw	$t2,	ANGLE
+    li	$t2,	1
 	sw	$t2,	ANGLE_CONTROL
 y_big_loop:
-	lw	$t9,	BOT_Y
-	blt	$t9,	0xf,	y_equal
-	ble	$t9,	$t7,	y_equal
+	lw	$t3,	BOT_Y
+	blt	$t3,	0xf,	y_equal
+	ble	$t3,	$t1,	y_equal
 	j	y_big_loop
 
 y_small:
-	sw	$t4,	ANGLE
+    li	$t2,	90
+	sw	$t2,	ANGLE
+    li	$t2,	1
 	sw	$t2,	ANGLE_CONTROL
 y_small_loop:
-	lw	$t9,	BOT_Y
-	bgt	$t9,	0x11d,	y_equal
-	bge	$t9,	$t7,	y_equal
+	lw	$t3,	BOT_Y
+	bgt	$t3,	0x11d,	y_equal
+	bge	$t3,	$t1,	y_equal
 	j	y_small_loop
 
 y_equal:
 
+    li $t2, 1
 	sw	$t2,	PUT_OUT_FIRE
-	sw	$0,	VELOCITY	# drive
+
+    lw $t0, 0($sp)
+    lw $t1, 4($sp)
+    lw $t2, 8($sp)
+    lw $t3, 12($sp)
+    add $sp,    $sp,    16
 
 	j	interrupt_dispatch
 
 ############ MAX GROWTH INTERRUPTS ############
 
 max_growth_interrupt:
+
+    sub $sp,    $sp,    20
+    sw $t0, 0($sp)
+    sw $t1, 4($sp)
+    sw $t5, 8($sp)
+    sw $t8, 12($sp)
+    sw $t9, 16($sp)
 
 	sw	$zero,	MAX_GROWTH_ACK	#GROW acknoledge
 	lw	$t9,	MAX_GROWTH_TILE	#location of the tile
@@ -1006,8 +1029,8 @@ move_downward_har:
 
 find_y_har:
 	#stop
-	li	$t8,	0	#temp, store velocity
-	sw	$t8,	VELOCITY	#set velocity to 0
+	# li	$t8,	0	#temp, store velocity
+	# sw	$t8,	VELOCITY	#set velocity to 0
 
 check_x_har:
 	lw	$t5,	BOT_X
@@ -1036,6 +1059,13 @@ On_har_loc:
 	# li $t8, 0 	#temp, store velocity
 	# sw $t8, VELOCITY 	#set velocity to -1
 	sw	$t9,	HARVEST_TILE	#Put out the fire
+
+    lw $t0, 0($sp)
+    lw $t1, 4($sp)
+    lw $t5, 8($sp)
+    lw $t8, 12($sp)
+    lw $t9, 16($sp)
+    add $sp,    $sp,    20
 
 	j	interrupt_dispatch
 
