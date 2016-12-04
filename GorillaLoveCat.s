@@ -525,6 +525,9 @@ main:
 ############ ENABLE INTERRUPTS ############
 
 	# enable interrupts
+    li $t0, BONK_MASK
+    or	$t0,	$t0,	1
+	mtc0	$t0,	$12
 	# li	$t0,	ON_FIRE_MASK
 	# or	$t0,	$t0,	1
 	# mtc0	$t0,	$12
@@ -770,55 +773,71 @@ location_if_2:
 	j	x_increase
 
 x_decrease:
-	li	$t0,	180
-	sw	$t0,	ANGLE
-	li	$t0,	1
-	sw	$t0,	ANGLE_CONTROL
-	mul	$t0,	$s4,	30
-	sub	$t0,	$t0,	15
+	# li	$t0,	180
+	# sw	$t0,	ANGLE
+	# li	$t0,	1
+	# sw	$t0,	ANGLE_CONTROL
+	mul	$t1,	$s4,	30
+	sub	$t1,	$t1,	15
 x_decrease_loop:
+    li	$t0,	180
+    sw	$t0,	ANGLE
+    li	$t0,	1
+    sw	$t0,	ANGLE_CONTROL
 	lw	$s4,	BOT_X
 	blt	$s4,	0xf,	main_loop
-	ble	$s4,	$t0,	main_loop
+	ble	$s4,	$t1,	main_loop
 	j	x_decrease_loop
 
 x_increase:
-	li	$t0,	0
-	sw	$t0,	ANGLE
-	li	$t0,	1
-	sw	$t0,	ANGLE_CONTROL
-	mul	$t0,	$s4,	30
-	add	$t0,	$t0,	45
+	# li	$t0,	0
+	# sw	$t0,	ANGLE
+	# li	$t0,	1
+	# sw	$t0,	ANGLE_CONTROL
+	mul	$t1,	$s4,	30
+	add	$t1,	$t1,	45
 x_increase_loop:
+    li	$t0,	0
+    sw	$t0,	ANGLE
+    li	$t0,	1
+    sw	$t0,	ANGLE_CONTROL
 	lw	$s4,	BOT_X
 	bgt	$s4,	0x11d,	main_loop
-	bge	$s4,	$t0,	main_loop
+	bge	$s4,	$t1,	main_loop
 	j	x_increase_loop
 
 y_decrease:
-	li	$t0,	270
-	sw	$t0,	ANGLE
-	li	$t0,	1
-	sw	$t0,	ANGLE_CONTROL
-	mul	$t0,	$s5,	30
-	sub	$t0,	$t0,	15
+	# li	$t0,	270
+	# sw	$t0,	ANGLE
+	# li	$t0,	1
+	# sw	$t0,	ANGLE_CONTROL
+	mul	$t1,	$s5,	30
+	sub	$t1,	$t1,	15
 y_decrease_loop:
+    li	$t0,	270
+    sw	$t0,	ANGLE
+    li	$t0,	1
+    sw	$t0,	ANGLE_CONTROL
 	lw	$s5,	BOT_Y
 	blt	$s5,	0xf,	main_loop
-	ble	$s5,	$t0,	main_loop
+	ble	$s5,	$t1,	main_loop
 	j	y_decrease_loop
 
 y_increase:
-	li	$t0,	90
-	sw	$t0,	ANGLE
-	li	$t0,	1
-	sw	$t0,	ANGLE_CONTROL
-	mul	$t0,	$s5,	30
-	add	$t0,	$t0,	45
+	# li	$t0,	90
+	# sw	$t0,	ANGLE
+	# li	$t0,	1
+	# sw	$t0,	ANGLE_CONTROL
+	mul	$t1,	$s5,	30
+	add	$t1,	$t1,	45
 y_increase_loop:
+    li	$t0,	90
+    sw	$t0,	ANGLE
+    li	$t0,	1
+    sw	$t0,	ANGLE_CONTROL
 	lw	$s5,	BOT_Y
 	bgt	$s5,	0x11d,	main_loop
-	bge	$s5,	$t0,	main_loop
+	bge	$s5,	$t1,	main_loop
 	j	y_increase_loop
 
 ############ BACK TO MAIN LOOP ############
@@ -859,6 +878,9 @@ interrupt_dispatch:	# Interrupt:
 	mfc0	$k0,	$13	# Get Cause register, again
 	beq	$k0,	0,	done	# handled all outstanding interrupts
 
+    and $a0, $k0, BONK_MASK
+    bne $a0, 0, bonk_interrupt
+
 	# add dispatch for other interrupt types here.
 	and	$a0,	$k0,	ON_FIRE_MASK
 	bne	$a0,	0,	fire_interrupt
@@ -874,6 +896,17 @@ interrupt_dispatch:	# Interrupt:
 	syscall
 	j	done
 
+bonk_interrupt:
+
+    sw    $a1,    BONK_ACK
+    li    $a1,    10
+    lw    $a0,    TIMER
+    and    $a0, $a0, 1
+    bne    $a0,    $zero,    bonk_skip
+    li    $a1,    -10
+bonk_skip:
+    sw $a1, 0xffff0010($zero)
+    j interrupt_dispatch
 ############ FIRE INTERRUPTS ############
 
 fire_interrupt: ## from lab 10.2
