@@ -520,6 +520,12 @@ solution:	.space 328
       jr  $ra
 ################################
 
+#############################
+#                          #
+#   OUR CODE BEGINS HERE   #
+#                          #
+#############################
+
 main:
 
 ############ ENABLE INTERRUPTS ############
@@ -651,6 +657,7 @@ has_seed:
 	j	has_fire
 
 has_water:
+
 	bgt	$s2,	1,	has_fire
 	li	$t0,	2
 	sw	$t0,	SET_RESOURCE_TYPE
@@ -880,6 +887,8 @@ interrupt_dispatch:	# Interrupt:
 	syscall
 	j	done
 
+############ BONK INTERRUPTS ############
+
 bonk_interrupt:
 
 	sw	$a1,	BONK_ACK
@@ -1015,7 +1024,7 @@ beq $t8,    0   harvest_y_finish_check
 lw $t8, 4($t9)  # owning_bot
 bne $t8,    0   harvest_y_finish_check
 lw $t8, 8($t9)  # growth
-bne $t8, 512,   harvest_y_finish_check
+bne $t8, 0x200,   harvest_y_finish_check
 sw $0,  HARVEST_TILE
 
 harvest_y_finish_check:
