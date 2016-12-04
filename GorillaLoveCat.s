@@ -531,6 +531,15 @@ main:
     or	$t0,	$t0,	REQUEST_PUZZLE_INT_MASK
 	or	$t0,	$t0,	1
 	mtc0	$t0,	$12
+	# li	$t0,	ON_FIRE_MASK
+	# or	$t0,	$t0,	1
+	# mtc0	$t0,	$12
+	# li	$t0,	MAX_GROWTH_INT_MASK
+	# or	$t0,	$t0,	1
+	# mtc0	$t0,	$12
+	# li	$t0,	REQUEST_PUZZLE_INT_MASK
+	# or	$t0,	$t0,	1
+	# mtc0	$t0,	$12
 
 	add	$s7,	$0,	0
 	add	$a3,	$0,	0
@@ -599,7 +608,7 @@ init_y_increase_loop:
 	j	init_y_increase_loop
 
 solve_puzzle:
-	# sw	$0,	VELOCITY
+	sw	$0,	VELOCITY
 	la	$t0,	solution
 	add	$t1,	$t0,	328
 zero_loop:
@@ -688,7 +697,6 @@ has_fire:
 
 	# 对每一格check
 	# if state == 0 & seed > 0 plant
-    # if state == 1 & own == 0 & growth == 512 harvest
 	# if state == 1 & own == 0 & water > 0 water
 	# if state == 1 & own == 1 & fire > 0 fire
 
@@ -715,18 +723,15 @@ action_water:
 	sw	$t0,	WATER_TILE
 	sub	$s0,	$s0,	1
 	j	finish_action
+action_harvest:
+    sw $0,  HARVEST_TILE
 
 others_plant:
 	beq	$s2,	0,	finish_action
 action_fire:
 	sw	$0,	BURN_TILE
 	sub	$s2,	$s2,	1
-	j	finish_action
-
-action_harvest:
-    add $t0,    $0,    1
-    sw	$t0,	HARVEST_TILE	#Put out the fire
-
+	# j	finish_action
 
 finish_action:
 
@@ -888,7 +893,7 @@ bonk_interrupt:
 	bne	$a0,	$zero,	bonk_skip
 	li	$a1,	-10
 bonk_skip:
-	sw	$a1,	0xffff0010($zero)
+	sw	$a1,	VELOCITY
 	j	interrupt_dispatch
 
 ############ FIRE INTERRUPTS ############
@@ -979,20 +984,13 @@ y_equal:
     lw $t1, 4($sp)
     lw $t2, 8($sp)
     lw $t3, 12($sp)
-    add $sp,    $sp,    16
+    sub $sp,    $sp,    16
 
 	j	interrupt_dispatch
 
 ############ MAX GROWTH INTERRUPTS ############
 
 max_growth_interrupt:
-
-    sub $sp,    $sp,    20
-    sw $t0, 0($sp)
-    sw $t1, 4($sp)
-    sw $t5, 8($sp)
-    sw $t8, 12($sp)
-    sw $t9, 16($sp)
 
 	sw	$zero,	MAX_GROWTH_ACK	#GROW acknoledge
 	lw	$t9,	MAX_GROWTH_TILE	#location of the tile
@@ -1060,18 +1058,11 @@ On_har_loc:
 	# sw $t8, VELOCITY 	#set velocity to -1
 	sw	$t9,	HARVEST_TILE	#Put out the fire
 
-    lw $t0, 0($sp)
-    lw $t1, 4($sp)
-    lw $t5, 8($sp)
-    lw $t8, 12($sp)
-    lw $t9, 16($sp)
-    add $sp,    $sp,    20
-
 	j	interrupt_dispatch
-
 
 request_puzzle_interrupt:
 
+    # sw $0,  VELOCITY
 	sw	$a1,	REQUEST_PUZZLE_ACK	# acknowledge interrupt
 	add	$s7,	$0,	1
 
