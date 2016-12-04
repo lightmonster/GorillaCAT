@@ -1018,8 +1018,8 @@ move_right_fire:
 	j check_x_har
 
 On_har_loc:
-	li $t8, 0 	#temp, store velocity
-	sw $t8, VELOCITY 	#set velocity to -1
+	# li $t8, 0 	#temp, store velocity
+	# sw $t8, VELOCITY 	#set velocity to -1
 	sw $t9, HARVEST_TILE	#Put out the fire
 
 	j interrupt_dispatch
