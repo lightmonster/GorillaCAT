@@ -525,18 +525,18 @@ main:
 ############ ENABLE INTERRUPTS ############
 
 	# enable interrupts
-    li $t0, BONK_MASK
-    or	$t0,	$t0,	1
+	li	$t0,	BONK_MASK
+	or	$t0,	$t0,	1
 	mtc0	$t0,	$12
-	# li	$t0,	ON_FIRE_MASK
-	# or	$t0,	$t0,	1
-	# mtc0	$t0,	$12
+	li	$t0,	ON_FIRE_MASK
+	or	$t0,	$t0,	1
+	mtc0	$t0,	$12
 	li	$t0,	MAX_GROWTH_INT_MASK
 	or	$t0,	$t0,	1
 	mtc0	$t0,	$12
-	# li	$t0,	REQUEST_PUZZLE_INT_MASK
-	# or	$t0,	$t0,	1
-	# mtc0	$t0,	$12
+	li	$t0,	REQUEST_PUZZLE_INT_MASK
+	or	$t0,	$t0,	1
+	mtc0	$t0,	$12
 
 	add	$s7,	$0,	0
 	add	$a3,	$0,	0
@@ -604,23 +604,21 @@ init_y_increase_loop:
 	bge	$s5,	$t1,	main_loop
 	j	init_y_increase_loop
 
-#
-# solve_puzzle:
-# 	sw	$0,	VELOCITY
-#
-# 	la	$t0,	solution
-# 	add $t1,  $t0,  328
-# zero_loop:
-#   bge $t0,  $t1,  done_zero
-#   sw $0,  0($t0)
-#   add $t0,  $t0,  4
-#   j zero_loop
-# done_zero:
-#   la $a0, solution
-#   jal recursive_backtracking
-#   sw $a0, SUBMIT_SOLUTION
-#   add $s7,  $0,  0
-#   j request
+solve_puzzle:
+	sw	$0,	VELOCITY
+	la	$t0,	solution
+	add	$t1,	$t0,	328
+zero_loop:
+	bge	$t0,	$t1,	done_zero
+	sw	$0,	0($t0)
+	add	$t0,	$t0,	4
+	j	zero_loop
+done_zero:
+	la	$a0,	solution
+	jal	recursive_backtracking
+	sw	$a0,	SUBMIT_SOLUTION
+	add	$s7,	$0,	0
+	j	request
 
 main_loop:
 
@@ -631,8 +629,8 @@ main_loop:
 
 check_request_status:
 
-	# beq	$s7,	1,	solve_puzzle
-	# beq	$s7,	2,	has_fire
+	beq	$s7,	1,	solve_puzzle
+	beq	$s7,	2,	has_fire
 
 request:
 
@@ -645,29 +643,29 @@ request:
 	bgt	$s0,	0,	has_water
 	li	$t0,	0
 	sw	$t0,	SET_RESOURCE_TYPE
-	la	$a0,	puzzle_data
-	sw	$a0,	REQUEST_PUZZLE
-	# add	$s7,	$0,	2
-	# j	has_fire
+	la	$a1,	puzzle_data
+	sw	$a1,	REQUEST_PUZZLE
+	add	$s7,	$0,	2
+	j	has_fire
 
 has_water:
 
 	bgt	$s1,	0,	has_seed
 	li	$t0,	1
 	sw	$t0,	SET_RESOURCE_TYPE
-	la	$a0,	puzzle_data
-	sw	$a0,	REQUEST_PUZZLE
-	# add	$s7,	$0,	2
-	# j	has_fire
+	la	$a1,	puzzle_data
+	sw	$a1,	REQUEST_PUZZLE
+	add	$s7,	$0,	2
+	j	has_fire
 
 has_seed:
 
 	bgt	$s2,	0,	has_fire
 	li	$t0,	2
 	sw	$t0,	SET_RESOURCE_TYPE
-	la	$a0,	puzzle_data
-	sw	$a0,	REQUEST_PUZZLE
-	# add	$s7,	$0,	2
+	la	$a1,	puzzle_data
+	sw	$a1,	REQUEST_PUZZLE
+	add	$s7,	$0,	2
 
 has_fire:
 
@@ -773,68 +771,52 @@ location_if_2:
 	j	x_increase
 
 x_decrease:
-	# li	$t0,	180
-	# sw	$t0,	ANGLE
-	# li	$t0,	1
-	# sw	$t0,	ANGLE_CONTROL
 	mul	$t1,	$s4,	30
 	sub	$t1,	$t1,	15
 x_decrease_loop:
-    li	$t0,	180
-    sw	$t0,	ANGLE
-    li	$t0,	1
-    sw	$t0,	ANGLE_CONTROL
+	li	$t0,	180
+	sw	$t0,	ANGLE
+	li	$t0,	1
+	sw	$t0,	ANGLE_CONTROL
 	lw	$s4,	BOT_X
 	blt	$s4,	0xf,	main_loop
 	ble	$s4,	$t1,	main_loop
 	j	x_decrease_loop
 
 x_increase:
-	# li	$t0,	0
-	# sw	$t0,	ANGLE
-	# li	$t0,	1
-	# sw	$t0,	ANGLE_CONTROL
 	mul	$t1,	$s4,	30
 	add	$t1,	$t1,	45
 x_increase_loop:
-    li	$t0,	0
-    sw	$t0,	ANGLE
-    li	$t0,	1
-    sw	$t0,	ANGLE_CONTROL
+	li	$t0,	0
+	sw	$t0,	ANGLE
+	li	$t0,	1
+	sw	$t0,	ANGLE_CONTROL
 	lw	$s4,	BOT_X
 	bgt	$s4,	0x11d,	main_loop
 	bge	$s4,	$t1,	main_loop
 	j	x_increase_loop
 
 y_decrease:
-	# li	$t0,	270
-	# sw	$t0,	ANGLE
-	# li	$t0,	1
-	# sw	$t0,	ANGLE_CONTROL
 	mul	$t1,	$s5,	30
 	sub	$t1,	$t1,	15
 y_decrease_loop:
-    li	$t0,	270
-    sw	$t0,	ANGLE
-    li	$t0,	1
-    sw	$t0,	ANGLE_CONTROL
+	li	$t0,	270
+	sw	$t0,	ANGLE
+	li	$t0,	1
+	sw	$t0,	ANGLE_CONTROL
 	lw	$s5,	BOT_Y
 	blt	$s5,	0xf,	main_loop
 	ble	$s5,	$t1,	main_loop
 	j	y_decrease_loop
 
 y_increase:
-	# li	$t0,	90
-	# sw	$t0,	ANGLE
-	# li	$t0,	1
-	# sw	$t0,	ANGLE_CONTROL
 	mul	$t1,	$s5,	30
 	add	$t1,	$t1,	45
 y_increase_loop:
-    li	$t0,	90
-    sw	$t0,	ANGLE
-    li	$t0,	1
-    sw	$t0,	ANGLE_CONTROL
+	li	$t0,	90
+	sw	$t0,	ANGLE
+	li	$t0,	1
+	sw	$t0,	ANGLE_CONTROL
 	lw	$s5,	BOT_Y
 	bgt	$s5,	0x11d,	main_loop
 	bge	$s5,	$t1,	main_loop
@@ -861,9 +843,9 @@ unhandled_str:	.asciiz	"Unhandled interrupt type\n"
 .ktext 0x80000180
 
 interrupt_handler:
-.set noat
+.set	noat
 	move	$k1, $at	# Save $at
-.set at
+.set	at
 	la	$k0,	chunkIH
 	sw	$a0,	0($k0)	# Get some free registers
 	sw	$a1,	4($k0)	# by storing them to a global variable
@@ -878,8 +860,8 @@ interrupt_dispatch:	# Interrupt:
 	mfc0	$k0,	$13	# Get Cause register, again
 	beq	$k0,	0,	done	# handled all outstanding interrupts
 
-    and $a0, $k0, BONK_MASK
-    bne $a0, 0, bonk_interrupt
+	and	$a0,	$k0,	BONK_MASK
+	bne	$a0,	0,	bonk_interrupt
 
 	# add dispatch for other interrupt types here.
 	and	$a0,	$k0,	ON_FIRE_MASK
@@ -898,15 +880,15 @@ interrupt_dispatch:	# Interrupt:
 
 bonk_interrupt:
 
-    sw    $a1,    BONK_ACK
-    li    $a1,    10
-    lw    $a0,    TIMER
-    and    $a0, $a0, 1
-    bne    $a0,    $zero,    bonk_skip
-    li    $a1,    -10
+	sw	$a1,	BONK_ACK
+	li	$a1,	10
+	lw	$a0,	TIMER
+	and	$a0,	$a0,	1
+	bne	$a0,	$zero,	bonk_skip
+	li	$a1,	-10
 bonk_skip:
-    sw $a1, 0xffff0010($zero)
-    j interrupt_dispatch
+	sw	$a1,	0xffff0010($zero)
+	j	interrupt_dispatch
 ############ FIRE INTERRUPTS ############
 
 fire_interrupt: ## from lab 10.2
@@ -993,11 +975,11 @@ max_growth_interrupt:
 	lw	$t9,	MAX_GROWTH_TILE	#location of the tile
 	and	$t0,	$t9,	0xffff0000
 	srl	$t0,	$t0,	16	#Store x_index to $t0
-	and $t1,	$t9,	0x0000ffff	#Store y_index to $t1
-	mul $t0,	$t0,	30
-	mul $t1,	$t1,	30
-	add $t0,	$t0,	15	#Convert x_index to location
-	add $t1,	$t1,	15	#Convert y_index to location
+	and	$t1,	$t9,	0x0000ffff	#Store y_index to $t1
+	mul	$t0,	$t0,	30
+	mul	$t1,	$t1,	30
+	add	$t0,	$t0,	15	#Convert x_index to location
+	add	$t1,	$t1,	15	#Convert y_index to location
 
 go_to_harvest:
 check_y_har:
@@ -1014,55 +996,54 @@ move_upward_har:
 	j	check_y_har
 
 move_downward_har:
-	li $t8, 90 #temp, store angle
-	sw $t8, ANGLE #set angle to 90, downward
-	li $t9, 1
-	sw $t9, ANGLE_CONTROL
-	li $t8, 10 #temp, store velocity
-	sw $t8, VELOCITY #set velocity to 1
-	j check_y_har
+	li	$t8,	90	#temp, store angle
+	sw	$t8,	ANGLE	#set angle to 90, downward
+	li	$t9,	1
+	sw	$t9,	ANGLE_CONTROL
+	li	$t8,	10	#temp, store velocity
+	sw	$t8,	VELOCITY	#set velocity to 1
+	j	check_y_har
 
 find_y_har:
 	#stop
-	li $t8, 0 #temp, store velocity
-	sw $t8, VELOCITY #set velocity to 0
+	li	$t8,	0	#temp, store velocity
+	sw	$t8,	VELOCITY	#set velocity to 0
 
 check_x_har:
-	lw $t5, BOT_X
-	beq $t0, $t5, On_har_loc
-	bgt $t0, $t5, move_right_fire #distance-X, move right if >0
+	lw	$t5,	BOT_X
+	beq	$t0,	$t5,	On_har_loc
+	bgt	$t0,	$t5,	move_right_fire	#distance-X, move right if >0
 
 move_left_fire:
-	li $t8, 180 #temp, store angle
-	sw $t8, ANGLE #set angle to 90, upward
-	li $t9, 1
-	sw $t9, ANGLE_CONTROL
-	add $t8, $zero, 10 #temp, store velocity
-	sw $t8, VELOCITY #set velocity to 1
-	j check_x_har
+	li	$t8,	180 #temp, store angle
+	sw	$t8,	ANGLE #set angle to 90, upward
+	li	$t9,	1
+	sw	$t9,	ANGLE_CONTROL
+	add	$t8,	$zero, 10 #temp, store velocity
+	sw	$t8,	VELOCITY #set velocity to 1
+	j	check_x_har
 
 move_right_fire:
-	li $t8, 0 #temp, store angle
-	sw $t8, ANGLE #set angle to 90, upward
-	li $t9, 1
-	sw $t9, ANGLE_CONTROL
-	li $t8, 10 #temp, store velocity
-	sw $t8, VELOCITY #set velocity to -1
-	j check_x_har
+	li	$t8,	0 #temp, store angle
+	sw	$t8,	ANGLE #set angle to 90, upward
+	li	$t9,	1
+	sw	$t9,	ANGLE_CONTROL
+	li	$t8,	10 #temp, store velocity
+	sw	$t8,	VELOCITY #set velocity to -1
+	j	check_x_har
 
 On_har_loc:
 	# li $t8, 0 	#temp, store velocity
 	# sw $t8, VELOCITY 	#set velocity to -1
-	sw $t9, HARVEST_TILE	#Put out the fire
+	sw	$t9,	HARVEST_TILE	#Put out the fire
 
-	j interrupt_dispatch
+	j	interrupt_dispatch
 
 
 request_puzzle_interrupt:
 
-	# sw	$a1,	REQUEST_PUZZLE_ACK	# acknowledge interrupt
-
-	# add $s7,	$0, 1
+	sw	$a1,	REQUEST_PUZZLE_ACK	# acknowledge interrupt
+	add	$s7,	$0,	1
 
 	j	interrupt_dispatch
 
