@@ -50,13 +50,13 @@ PRINT_STRING = 4 ###### AND OTHER ADDRESS ######
 .data
 # data things go here
 .align 2
-tile_data: .space 1600
-puzzle_data: .space 4096
-solution: .space 328
+tile_data:	.space	1600
+puzzle_data:	.space	4096
+solution:	.space 328
 
 .text
 
-################	Lab 7 & 8 ################
+################ Lab 7 & 8 ################
 .globl is_single_value_domain ####### CODE OF LAB 7 & 8
   is_single_value_domain:
       beq    $a0, $0, isvd_zero     # return 0 if domain == 0
@@ -523,12 +523,12 @@ solution: .space 328
 main:
 
 ############ ENABLE INTERRUPTS ############
-  li	$t0,	BONK_MASK
-  or	$t0,	$t0,	ON_FIRE_MASK
-  or	$t0,	$t0,	MAX_GROWTH_INT_MASK
-  or	$t0,	$t0,	REQUEST_PUZZLE_INT_MASK
-  or	$t0,	$t0,	1
-  mtc0	$t0,	$12
+	li	$t0,	BONK_MASK
+	or	$t0,	$t0,	ON_FIRE_MASK
+	or	$t0,	$t0,	MAX_GROWTH_INT_MASK
+	or	$t0,	$t0,	REQUEST_PUZZLE_INT_MASK
+	or	$t0,	$t0,	1
+	mtc0	$t0,	$12
 
 	add	$s7,	$0,	0
 	add	$a3,	$0,	0
@@ -607,14 +607,12 @@ zero_loop:
 	j	zero_loop
 done_zero:
 	la	$a0,	solution
-    # add	$s7,	$0,	3
 	jal	recursive_backtracking
 	sw	$a0,	SUBMIT_SOLUTION
 	add	$s7,	$0,	0
 	j	request
 
 main_loop:
-
 
 	la	$s3,	tile_data
 	sw	$s3,	TILE_SCAN
@@ -643,7 +641,6 @@ request:
 	j	has_fire
 
 has_seed:
-
 
 	bgt	$s0,	10,	has_water
 	li	$t0,	0
@@ -701,14 +698,13 @@ action_plant:
 	bne	$t0,	1,	finish_action
 	sw	$0,	SEED_TILE
 	sub	$s1,	$s1,	1
-    # j	finish_action
 	j	my_plant
 
 state_1:
 	bgt	$t2,	0,	others_plant
 
 my_plant:
-    beq	$t3,	0x200,	action_harvest
+	beq	$t3,	0x200,	action_harvest
 	beq	$s0,	0,	finish_action
 action_water:
 	li	$t0,	2	# Dump 10 units of water
@@ -716,7 +712,7 @@ action_water:
 	sub	$s0,	$s0,	4
 	j	finish_action
 action_harvest:
-    sw $0,  HARVEST_TILE
+	sw	$0,	HARVEST_TILE
     j	finish_action
 
 others_plant:
@@ -724,7 +720,6 @@ others_plant:
 action_fire:
 	sw	$0,	BURN_TILE
 	sub	$s2,	$s2,	1
-	# j	finish_action
 
 finish_action:
 
@@ -901,98 +896,98 @@ bonk_skip:
 
 fire_interrupt:
 
-sub $sp,    $sp,    20
-sw $t0, 0($sp)
-sw $t1, 4($sp)
-sw $t5, 8($sp)
-sw $t8, 12($sp)
-sw $t9, 16($sp)
+    sub	$sp,	$sp,	20
+    sw	$t0,	0($sp)
+    sw	$t1,	4($sp)
+    sw	$t5,	8($sp)
+    sw	$t8,	12($sp)
+    sw	$t9,	16($sp)
 
-	sw $zero, ON_FIRE_ACK 	#Fire acknoledge
-	lw $a3, GET_FIRE_LOC
-	and $t0, $a3, 0xffff0000
-	srl $t0, $t0, 16	#Store x_index to $t0
-	and $t1, $a3, 0x0000ffff	#Store y_index to $t1
-	mul $t0, $t0, 30
-	mul $t1, $t1, 30
-	add $t0, $t0, 15	#Convert x_index to location
-	add $t1, $t1, 15	#Convert y_index to location
+	sw	$zero,	ON_FIRE_ACK	#Fire acknoledge
+	lw	$a3,	GET_FIRE_LOC
+	and	$t0,	$a3, 0xffff0000
+	srl	$t0,	$t0, 16	#Store x_index to $t0
+	and	$t1,	$a3, 0x0000ffff	#Store y_index to $t1
+	mul	$t0,	$t0, 30
+	mul	$t1,	$t1, 30
+	add	$t0,	$t0, 15	#Convert x_index to location
+	add	$t1,	$t1, 15	#Convert y_index to location
 
-  go_to_fire:
-  check_y_fire:
-  	lw $t5, BOT_Y #read bot-Y
-  	beq $t1, $t5, find_y_fire #beq $t7, 0, find_y
-  	bgt $t1, $t5, move_downward_fire
-  move_upward_fire:
-  	li $t8, 270 #temp, store angle
-  	sw $t8, ANGLE #set angle to 90, upward
-  	li $t9, 1
-  	sw $t9, ANGLE_CONTROL
-  	add $t8, $zero, 10 #set v to -1
-  	sw $t8, VELOCITY #set velocity to 1
-  	j check_y_fire
+go_to_fire:
+check_y_fire:
+	lw	$t5,	BOT_Y	#read bot-Y
+	beq	$t1,	$t5,	find_y_fire	#beq $t7, 0, find_y
+	bgt	$t1,	$t5,	move_downward_fire
+move_upward_fire:
+	li	$t8,	270	#temp, store angle
+	sw	$t8,	ANGLE	#set angle to 90, upward
+	li	$t9,	1
+	sw	$t9,	ANGLE_CONTROL
+	add	$t8,	$zero,	10	#set v to -1
+	sw	$t8,	VELOCITY	#set velocity to 1
+	j	check_y_fire
 
-  move_downward_fire:
-  	li $t8, 90 #temp, store angle
-  	sw $t8, ANGLE #set angle to 90, downward
-  	li $t9, 1
-  	sw $t9, ANGLE_CONTROL
-  	li $t8, 10 #temp, store velocity
-  	sw $t8, VELOCITY #set velocity to 1
-  	j check_y_fire
+move_downward_fire:
+	li	$t8,	90	#temp, store angle
+	sw	$t8,	ANGLE	#set angle to 90, downward
+	li	$t9,	1
+	sw	$t9,	ANGLE_CONTROL
+	li	$t8,	10	#temp, store velocity
+	sw	$t8,	VELOCITY	#set velocity to 1
+	j	check_y_fire
 
-  find_y_fire:
-  	#stop
-  	li $t8, 0 #temp, store velocity
-  	sw $t8, VELOCITY #set velocity to 0
+find_y_fire:
+	#stop
+	li	$t8,	0	#temp, store velocity
+	sw	$t8,	VELOCITY	#set velocity to 0
 
-  check_x_fire:
-  	lw $t5, BOT_X
-  	beq $t0, $t5, On_fire_loc
-  	bgt $t0, $t5, move_right_fire #distance-X, move right if >0
+check_x_fire:
+	lw	$t5,	BOT_X
+	beq	$t0,	$t5,	On_fire_loc
+	bgt	$t0,	$t5,	move_right_fire	#distance-X, move right if >0
 
-  move_left_fire:
-  	li $t8, 180 #temp, store angle
-  	sw $t8, ANGLE #set angle to 90, upward
-  	li $t9, 1
-  	sw $t9, ANGLE_CONTROL
-  	add $t8, $zero, 10 #temp, store velocity
-  	sw $t8, VELOCITY #set velocity to 1
-  	j check_x_fire
+move_left_fire:
+	li	$t8,	180	#temp, store angle
+	sw	$t8,	ANGLE	#set angle to 90, upward
+	li	$t9,	1
+	sw	$t9,	ANGLE_CONTROL
+	add	$t8,	$zero,	10	#temp, store velocity
+	sw	$t8,	VELOCITY	#set velocity to 1
+	j	check_x_fire
 
-  move_right_fire:
-  	li $t8, 0 #temp, store angle
-  	sw $t8, ANGLE #set angle to 90, upward
-  	li $t9, 1
-  	sw $t9, ANGLE_CONTROL
-  	li $t8, 10 #temp, store velocity
-  	sw $t8, VELOCITY #set velocity to -1
-  	j check_x_fire
+move_right_fire:
+	li	$t8,	0	#temp, store angle
+	sw	$t8,	ANGLE	#set angle to 90, upward
+	li	$t9,	1
+	sw	$t9,	ANGLE_CONTROL
+	li	$t8,	10	#temp, store velocity
+	sw	$t8,	VELOCITY	#set velocity to -1
+	j	check_x_fire
 
-  On_fire_loc:
-  	li $t8, 0 	#temp, store velocity
-  	sw $t8, VELOCITY 	#set velocity to -1
-  	sw $t9, PUT_OUT_FIRE	#Put out the fire
+On_fire_loc:
+	li	$t8,	0	#temp, store velocity
+	sw	$t8,	VELOCITY	#set velocity to -1
+	sw	$t9,	PUT_OUT_FIRE	#Put out the fire
 
+	lw	$t0,	0($sp)
+	lw	$t1,	4($sp)
+	lw	$t5,	8($sp)
+	lw	$t8,	12($sp)
+	lw	$t9,	16($sp)
+	add	$sp,	$sp,	20
 
-        lw $t0, 0($sp)
-        lw $t1, 4($sp)
-        lw $t5, 8($sp)
-        lw $t8, 12($sp)
-        lw $t9, 16($sp)
-        add $sp,    $sp,    20
+	j	interrupt_dispatch
 
-  	j interrupt_dispatch
 ############ MAX GROWTH INTERRUPTS ############
 
 max_growth_interrupt:
 
-sub $sp,    $sp,    20
-sw $t0, 0($sp)
-sw $t1, 4($sp)
-sw $t5, 8($sp)
-sw $t8, 12($sp)
-sw $t9, 16($sp)
+    sub	$sp,	$sp,	20
+    sw	$t0,	0($sp)
+    sw	$t1,	4($sp)
+    sw	$t5,	8($sp)
+    sw	$t8,	12($sp)
+    sw	$t9,	16($sp)
 
 	sw	$zero,	MAX_GROWTH_ACK	#GROW acknoledge
 	lw	$t9,	MAX_GROWTH_TILE	#location of the tile
@@ -1025,16 +1020,16 @@ sw $0,  HARVEST_TILE
 
 harvest_y_finish_check:
 
-	lw	$t5,	BOT_Y #read bot-Y
-	beq	$t1,	$t5,	find_y_har #beq $t7, 0, find_y
+	lw	$t5,	BOT_Y	#read bot-Y
+	beq	$t1,	$t5,	find_y_har	#beq $t7, 0, find_y
 	bgt	$t1,	$t5,	move_downward_har
 move_upward_har:
-	li	$t8,	270 #temp, store angle
-	sw	$t8,	ANGLE #set angle to 90, upward
+	li	$t8,	270	#temp, store angle
+	sw	$t8,	ANGLE	#set angle to 90, upward
 	li	$t9,	1
 	sw	$t9,	ANGLE_CONTROL
-	add	$t8,	$zero, 10 #set v to -1
-	sw	$t8,	VELOCITY #set velocity to 1
+	add	$t8,	$zero,	10	#set v to -1
+	sw	$t8,	VELOCITY	#set velocity to 1
 	j	check_y_har
 
 move_downward_har:
@@ -1047,9 +1042,6 @@ move_downward_har:
 	j	check_y_har
 
 find_y_har:
-	#stop
-	# li	$t8,	0	#temp, store velocity
-	# sw	$t8,	VELOCITY	#set velocity to 0
 
 check_x_har:
 	lw	$t5,	BOT_X
@@ -1057,40 +1049,37 @@ check_x_har:
 	bgt	$t0,	$t5,	move_right_har	#distance-X, move right if >0
 
 move_left_har:
-	li	$t8,	180 #temp, store angle
-	sw	$t8,	ANGLE #set angle to 90, upward
+	li	$t8,	180	#temp, store angle
+	sw	$t8,	ANGLE	#set angle to 90, upward
 	li	$t9,	1
 	sw	$t9,	ANGLE_CONTROL
-	add	$t8,	$zero, 10 #temp, store velocity
-	sw	$t8,	VELOCITY #set velocity to 1
+	add	$t8,	$zero,	10	#temp, store velocity
+	sw	$t8,	VELOCITY	#set velocity to 1
 	j	check_x_har
 
 move_right_har:
-	li	$t8,	0 #temp, store angle
-	sw	$t8,	ANGLE #set angle to 90, upward
+	li	$t8,	0	#temp, store angle
+	sw	$t8,	ANGLE	#set angle to 90, upward
 	li	$t9,	1
 	sw	$t9,	ANGLE_CONTROL
-	li	$t8,	10 #temp, store velocity
-	sw	$t8,	VELOCITY #set velocity to -1
+	li	$t8,	10	#temp, store velocity
+	sw	$t8,	VELOCITY	#set velocity to -1
 	j	check_x_har
 
 On_har_loc:
-	# li $t8, 0 	#temp, store velocity
-	# sw $t8, VELOCITY 	#set velocity to -1
 	sw	$t9,	HARVEST_TILE	#Put out the fire
 
-    lw $t0, 0($sp)
-    lw $t1, 4($sp)
-    lw $t5, 8($sp)
-    lw $t8, 12($sp)
-    lw $t9, 16($sp)
-    add $sp,    $sp,    20
+    lw	$t0,	0($sp)
+    lw	$t1,	4($sp)
+    lw	$t5,	8($sp)
+    lw	$t8,	12($sp)
+    lw	$t9,	16($sp)
+    add	$sp,	$sp,	20
 
 	j	interrupt_dispatch
 
 request_puzzle_interrupt:
 
-    # sw $0,  VELOCITY
 	sw	$a1,	REQUEST_PUZZLE_ACK	# acknowledge interrupt
 	add	$s7,	$0,	1
 
@@ -1108,7 +1097,7 @@ done:
 	la	$k0,	chunkIH
 	lw	$a0,	0($k0)	# Restore saved registers
 	lw	$a1,	4($k0)
-.set noat
+.set	noat
 	move	$at,	$k1	# Restore $at
-.set at
+.set	at
 	eret
