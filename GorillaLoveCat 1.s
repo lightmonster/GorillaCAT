@@ -697,7 +697,7 @@ state_0:
 	beq	$s1,	0,	finish_action
 action_plant:
 	add	$a3,	$a3,	1
-	rem	$t0,	$a3,	2
+	rem	$t0,	$a3,	5
 	bne	$t0,	1,	finish_action
 	sw	$0,	SEED_TILE
 	sub	$s1,	$s1,	1
