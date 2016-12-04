@@ -716,7 +716,7 @@ state_1:
 	bgt	$t2,	0,	others_plant
 
 my_plant:
-    beq	$t3,	512,	action_harvest
+    beq	$t3,	0x200,	action_harvest
 	beq	$s0,	0,	finish_action
 action_water:
 	li	$t0,	10	# Dump 10 units of water
@@ -992,6 +992,13 @@ y_equal:
 
 max_growth_interrupt:
 
+sub $sp,    $sp,    20
+sw $t0, 0($sp)
+sw $t1, 4($sp)
+sw $t5, 8($sp)
+sw $t8, 12($sp)
+sw $t9, 16($sp)
+
 	sw	$zero,	MAX_GROWTH_ACK	#GROW acknoledge
 	lw	$t9,	MAX_GROWTH_TILE	#location of the tile
 	and	$t0,	$t9,	0xffff0000
@@ -1057,6 +1064,13 @@ On_har_loc:
 	# li $t8, 0 	#temp, store velocity
 	# sw $t8, VELOCITY 	#set velocity to -1
 	sw	$t9,	HARVEST_TILE	#Put out the fire
+
+    lw $t0, 0($sp)
+    lw $t1, 4($sp)
+    lw $t5, 8($sp)
+    lw $t8, 12($sp)
+    lw $t9, 16($sp)
+    add $sp,    $sp,    20
 
 	j	interrupt_dispatch
 
