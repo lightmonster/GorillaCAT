@@ -11,6 +11,9 @@
 		0	可以request
 		1	puzzle已好
 		2	正在request，等
+	# a0, a1 = for call function
+	# a3 = count for planting
+
 
 	# struct TileInfo {
 	#	int state; // Either 0 for EMPTY, 1 for GROWING

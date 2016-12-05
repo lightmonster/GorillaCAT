@@ -613,6 +613,9 @@ zero_loop:
 	j	zero_loop
 done_zero:
 	la	$a0,	solution
+
+
+
 	jal	recursive_backtracking
 	sw	$a0,	SUBMIT_SOLUTION
 	add	$s7,	$0,	0
@@ -704,7 +707,7 @@ action_plant:
 	rem	$t0,	$a3,	2
 	bne	$t0,	1,	finish_action
 	sw	$0,	SEED_TILE
-	sub	$s1,	$s1,	1
+	# sub	$s1,	$s1,	1
 	j	my_plant
 
 state_1:
@@ -712,11 +715,11 @@ state_1:
 
 my_plant:
 	beq	$t3,	0x200,	action_harvest
-	beq	$s0,	0,	finish_action
+	blt	$s0,	2,	finish_action
 action_water:
 	li	$t0,	2	# Dump 10 units of water
 	sw	$t0,	WATER_TILE
-	sub	$s0,	$s0,	4
+	# sub	$s0,	$s0,	4
 	j	finish_action
 action_harvest:
 	sw	$0,	HARVEST_TILE
@@ -726,7 +729,7 @@ others_plant:
 	beq	$s2,	0,	finish_action
 action_fire:
 	sw	$0,	BURN_TILE
-	sub	$s2,	$s2,	1
+	# sub	$s2,	$s2,	1
 
 finish_action:
 
@@ -1013,8 +1016,10 @@ check_y_har:
 
 lw $t8,  BOT_X
 div $t8,    $t8,    30
+bne $t8,    15, harvest_y_finish_check
 lw $t9,  BOT_Y
 div $t9,    $t9,    30
+bne $t9,    15, harvest_y_finish_check
 mul $t9,    $t9,    10
 add $t9,    $t8,    $t9
 mul $t9,    $t9,    16
